@@ -73,6 +73,7 @@ class TtlockBleDataUpdateCoordinator(DataUpdateCoordinator["TtlockBleCoordinator
         if result is None:
             return {"locked": None, "battery_level": None, "available": False}
         raw_state, battery = result
+        await connection.async_get_operation_log()
         return {
             "locked": _parse_lock_state(raw_state),
             "battery_level": battery,

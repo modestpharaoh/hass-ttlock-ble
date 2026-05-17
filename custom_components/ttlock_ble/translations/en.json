@@ -63,6 +63,25 @@
                 "name": "Available"
             }
         },
+        "event": {
+            "operation": {
+                "name": "Operation"
+            },
+            "log": {
+                "name": "Log",
+                "state_attributes": {
+                    "event_type": {
+                        "state": {
+                            "unlock": "Unlock",
+                            "lock": "Lock",
+                            "unlock_failed": "Unlock failed",
+                            "password_change": "Password change",
+                            "other": "Other"
+                        }
+                    }
+                }
+            }
+        },
         "lock": {
             "lock": {
                 "name": "Lock"

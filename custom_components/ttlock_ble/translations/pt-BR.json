@@ -63,6 +63,25 @@
                 "name": "Disponível"
             }
         },
+        "event": {
+            "operation": {
+                "name": "Operação"
+            },
+            "log": {
+                "name": "Registro",
+                "state_attributes": {
+                    "event_type": {
+                        "state": {
+                            "unlock": "Desbloqueio",
+                            "lock": "Bloqueio",
+                            "unlock_failed": "Falha ao desbloquear",
+                            "password_change": "Alteração de senha",
+                            "other": "Outro"
+                        }
+                    }
+                }
+            }
+        },
         "lock": {
             "lock": {
                 "name": "Fechadura"

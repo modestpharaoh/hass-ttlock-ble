@@ -27,6 +27,7 @@ def test_parse_lock_state_unknown(raw_state: int) -> None:
 def _mock_connection(*, query_return=(0, 80)) -> MagicMock:
     conn = MagicMock()
     conn.async_query_state = AsyncMock(return_value=query_return)
+    conn.async_get_operation_log = AsyncMock(return_value=[])
     return conn
 
 

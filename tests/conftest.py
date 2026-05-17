@@ -155,6 +155,7 @@ def mock_ttlock_connection() -> Generator[MagicMock]:
     instance.async_start = AsyncMock(return_value=None)
     instance.async_stop = AsyncMock(return_value=None)
     instance.async_query_state = AsyncMock(return_value=(0, 80))
+    instance.async_get_operation_log = AsyncMock(return_value=[])
     instance.async_lock = AsyncMock(return_value=None)
     instance.async_unlock = AsyncMock(return_value=None)
     instance.is_connected = True

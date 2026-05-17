@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from bleak import BleakClient
     from homeassistant.core import HomeAssistant
 
-    from ttlock_ble import LockEvent, VirtualKey
+    from ttlock_ble import LockEvent, LogEntry, VirtualKey
 
 
 RECONNECT_INITIAL_BACKOFF = 1.0
@@ -41,6 +41,11 @@ RECONNECT_COOLDOWN_SECONDS = 3600.0
 def event_signal(mac: str) -> str:
     """Dispatcher signal that carries `LockEvent`s for `mac`."""
     return f"{DOMAIN}_event_{mac.lower()}"
+
+
+def log_signal(mac: str) -> str:
+    """Dispatcher signal that carries `LogEntry` records for `mac`."""
+    return f"{DOMAIN}_log_{mac.lower()}"
 
 
 def connection_signal(mac: str) -> str:
@@ -61,6 +66,7 @@ class TtlockBleConnection:
         self._closing = False
         self._disconnected = asyncio.Event()
         self._cooldown_until: float = 0.0
+        self._seen_records: set[int] = set()
 
     @property
     def key(self) -> VirtualKey:
@@ -136,6 +142,40 @@ class TtlockBleConnection:
     async def async_unlock(self) -> None:
         """Send an UNLOCK command on the live connection (raises on failure)."""
         await self._async_run_command("unlock")
+
+    async def async_get_operation_log(self) -> list[LogEntry]:
+        """Fetch operation records from the lock and dispatch new ones."""
+        async with self._lock:
+            client = await self._async_ensure_connected_locked()
+            if client is None:
+                return []
+            try:
+                entries = await client.get_operation_log()
+            except TTLockError as exc:
+                LOGGER.warning(
+                    "get_operation_log failed for %s: %s",
+                    self._key.lockMac,
+                    exc,
+                )
+                return []
+        new_entries: list[LogEntry] = []
+        for entry in entries:
+            if entry.record_number not in self._seen_records:
+                self._seen_records.add(entry.record_number)
+                new_entries.append(entry)
+        if new_entries:
+            LOGGER.debug(
+                "Lock %s: %d new log entries",
+                self._key.lockMac,
+                len(new_entries),
+            )
+            for entry in new_entries:
+                async_dispatcher_send(
+                    self._hass,
+                    log_signal(self._key.lockMac),
+                    entry,
+                )
+        return new_entries
 
     async def _async_run_command(self, action: str) -> None:
         """
