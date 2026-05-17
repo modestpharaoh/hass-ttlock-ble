@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.1.0](https://github.com/roquerodrigo/ha-ttlock-ble/compare/v3.0.1...v3.1.0) (2026-05-17)
+
+
+### Features
+
+* **event:** add operation log entity; remove push-event entity ([09138ff](https://github.com/roquerodrigo/ha-ttlock-ble/commit/09138ff93532c96e6afd18af36237e4d4fc6fbc7))
+* fetch operation log records on each BLE connection ([d900838](https://github.com/roquerodrigo/ha-ttlock-ble/commit/d90083889beb1c3024e827ba654d15b219f00912))
+
+
+### Bug Fixes
+
+* **types:** align with SDK 0.1.4 LockState return type ([5938756](https://github.com/roquerodrigo/ha-ttlock-ble/commit/5938756dba846fa1cb7287cff583de23c918792f))
+
 ## [3.0.1](https://github.com/roquerodrigo/ha-ttlock-ble/compare/v3.0.0...v3.0.1) (2026-05-13)
 
 
