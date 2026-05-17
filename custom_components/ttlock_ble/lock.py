@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
 from typing import TYPE_CHECKING, Any
 
@@ -108,7 +109,7 @@ class TtlockBleLock(TtlockBleEntity, LockEntity):
         no `lock_state`; for those (and any unknown opcode that might
         still signify a change) we fall back to a forced re-query.
         """
-        LOGGER.info(
+        LOGGER.debug(
             "Event-driven update for %s (cmd_echo=0x%02x status=%d lock_state=%s)",
             self._key.lockMac,
             event.cmd_echo,
@@ -185,7 +186,13 @@ class TtlockBleLock(TtlockBleEntity, LockEntity):
         self._attr_is_locked = action == "lock"
         self._settle_until = time.monotonic() + COMMAND_SETTLE_SECONDS
         self.async_write_ha_state()
+        self.hass.async_create_task(self._async_fetch_log_after_command())
         await self.coordinator.async_request_refresh()
+
+    async def _async_fetch_log_after_command(self) -> None:
+        """Fetch operation log shortly after a command to capture the new record."""
+        await asyncio.sleep(5)
+        await self._connection.async_get_operation_log()
 
     async def _async_query_and_apply(self) -> None:
         """Force-query state and apply it to `_attr_is_locked` if known."""

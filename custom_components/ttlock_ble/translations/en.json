@@ -64,9 +64,6 @@
             }
         },
         "event": {
-            "operation": {
-                "name": "Operation"
-            },
             "log": {
                 "name": "Log",
                 "state_attributes": {

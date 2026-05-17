@@ -1,4 +1,4 @@
-ttlock-ble==0.1.2
+ttlock-ble==0.1.4
 aioesphomeapi==45.0.0
 aiousbwatcher==1.1.2
 bleak==3.0.2

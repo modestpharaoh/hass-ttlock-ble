@@ -137,7 +137,7 @@ async def test_unload_invokes_bluetooth_unsubs(
 
 async def test_setup_creates_lock_and_event_entities(hass, setup_integration) -> None:
     assert len(hass.states.async_all("lock")) == 1
-    assert len(hass.states.async_all("event")) == 2
+    assert len(hass.states.async_all("event")) == 1
 
 
 async def test_scan_interval_defaults_to_const(hass, setup_integration) -> None:

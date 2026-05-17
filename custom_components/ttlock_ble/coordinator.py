@@ -51,6 +51,7 @@ class TtlockBleDataUpdateCoordinator(DataUpdateCoordinator["TtlockBleCoordinator
             update_interval=scan_interval,
         )
         self._connections = connections
+        self._first_refresh_done = False
 
     @property
     def connections(self) -> dict[str, TtlockBleConnection]:
@@ -62,6 +63,7 @@ class TtlockBleDataUpdateCoordinator(DataUpdateCoordinator["TtlockBleCoordinator
         state: TtlockBleCoordinatorData = {}
         for mac, connection in self._connections.items():
             state[mac] = await self._async_poll(connection)
+        self._first_refresh_done = True
         return state
 
     async def _async_poll(
@@ -73,7 +75,9 @@ class TtlockBleDataUpdateCoordinator(DataUpdateCoordinator["TtlockBleCoordinator
         if result is None:
             return {"locked": None, "battery_level": None, "available": False}
         raw_state, battery = result
-        await connection.async_get_operation_log()
+        await connection.async_get_operation_log(
+            dispatch=self._first_refresh_done,
+        )
         return {
             "locked": _parse_lock_state(raw_state),
             "battery_level": battery,

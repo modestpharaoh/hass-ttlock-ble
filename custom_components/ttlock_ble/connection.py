@@ -143,11 +143,12 @@ class TtlockBleConnection:
         """Send an UNLOCK command on the live connection (raises on failure)."""
         await self._async_run_command("unlock")
 
-    async def async_get_operation_log(self) -> list[LogEntry]:
+    async def async_get_operation_log(self, *, dispatch: bool = True) -> list[LogEntry]:
         """Fetch operation records from the lock and dispatch new ones."""
         async with self._lock:
             client = await self._async_ensure_connected_locked()
             if client is None:
+                LOGGER.warning("get_operation_log: no client for %s", self._key.lockMac)
                 return []
             try:
                 entries = await client.get_operation_log()
@@ -158,14 +159,20 @@ class TtlockBleConnection:
                     exc,
                 )
                 return []
+        LOGGER.debug(
+            "get_operation_log for %s: %d entries, seen=%d",
+            self._key.lockMac,
+            len(entries),
+            len(self._seen_records),
+        )
         new_entries: list[LogEntry] = []
         for entry in entries:
             if entry.record_number not in self._seen_records:
                 self._seen_records.add(entry.record_number)
                 new_entries.append(entry)
-        if new_entries:
+        if new_entries and dispatch:
             LOGGER.debug(
-                "Lock %s: %d new log entries",
+                "Lock %s: dispatching %d new log entries",
                 self._key.lockMac,
                 len(new_entries),
             )

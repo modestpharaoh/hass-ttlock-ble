@@ -64,9 +64,6 @@
             }
         },
         "event": {
-            "operation": {
-                "name": "Operação"
-            },
             "log": {
                 "name": "Registro",
                 "state_attributes": {
