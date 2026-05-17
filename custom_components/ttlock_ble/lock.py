@@ -204,4 +204,5 @@ class TtlockBleLock(TtlockBleEntity, LockEntity):
             )
             return
         raw_state, _battery = result
-        self._apply_lock_state(raw_state)
+        if raw_state is not None:
+            self._apply_lock_state(raw_state)

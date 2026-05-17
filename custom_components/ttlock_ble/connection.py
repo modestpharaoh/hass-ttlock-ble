@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from bleak import BleakClient
     from homeassistant.core import HomeAssistant
 
-    from ttlock_ble import LockEvent, LogEntry, VirtualKey
+    from ttlock_ble import LockEvent, LockState, LogEntry, VirtualKey
 
 
 RECONNECT_INITIAL_BACKOFF = 1.0
@@ -104,7 +104,7 @@ class TtlockBleConnection:
         self,
         *,
         force_cooldown_bypass: bool = False,
-    ) -> tuple[int, int | None] | None:
+    ) -> tuple[LockState | None, int | None] | None:
         """
         Return `(lock_state, battery)` through the live connection.
 

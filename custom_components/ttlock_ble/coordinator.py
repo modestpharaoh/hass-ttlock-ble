@@ -85,7 +85,7 @@ class TtlockBleDataUpdateCoordinator(DataUpdateCoordinator["TtlockBleCoordinator
         }
 
 
-def _parse_lock_state(raw: int) -> bool | None:
+def _parse_lock_state(raw: int | None) -> bool | None:
     """Translate the SDK's tri-state lock value into HA's `bool | None`."""
     if raw == LOCK_STATE_LOCKED:
         return True
