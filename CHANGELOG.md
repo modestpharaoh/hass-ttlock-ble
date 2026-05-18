@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.0](https://github.com/roquerodrigo/ha-ttlock-ble/compare/v3.1.0...v3.2.0) (2026-05-18)
+
+
+### Features
+
+* **event:** use real datetime from SDK 0.1.5 for log timestamps ([b4971ac](https://github.com/roquerodrigo/ha-ttlock-ble/commit/b4971ac632c195e407a4ce4deff75bb5b7d813e7))
+
 ## [3.1.0](https://github.com/roquerodrigo/ha-ttlock-ble/compare/v3.0.1...v3.1.0) (2026-05-17)
 
 
