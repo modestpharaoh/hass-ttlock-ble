@@ -142,9 +142,10 @@ class TtlockBleLogEvent(TtlockBleEntity, EventEntity):
         event_type = _classify_record(entry.record_type)
         attributes: dict[str, object] = {
             "record_type": _record_type_name(entry.record_type),
-            "timestamp": entry.operate_date,
             "battery": entry.lock_battery,
         }
+        if entry.operate_date is not None:
+            attributes["timestamp"] = entry.operate_date.isoformat()
         if entry.uid is not None:
             attributes["uid"] = entry.uid
         if entry.password is not None:

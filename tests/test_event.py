@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime as dt
+
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from ttlock_ble import LogEntry
 
@@ -25,7 +27,7 @@ async def test_log_event_fires_on_new_record(
     entry = LogEntry(
         record_number=1,
         record_type=4,
-        operate_date="2026-05-17 10:00:00",
+        operate_date=dt.datetime(2026, 5, 17, 10, 0, 0),  # noqa: DTZ001 — lock RTC is naive
         lock_battery=85,
         uid=1234,
         password="123456",
@@ -39,7 +41,7 @@ async def test_log_event_fires_on_new_record(
     state = _log_state(hass)
     assert state.attributes["event_type"] == "unlock"
     assert state.attributes["record_type"] == "keyboard_password_unlock"
-    assert state.attributes["timestamp"] == "2026-05-17 10:00:00"
+    assert state.attributes["timestamp"] == "2026-05-17T10:00:00"
     assert state.attributes["battery"] == 85
     assert state.attributes["uid"] == 1234
     assert state.attributes["credential"] == "123456"
