@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.2.1](https://github.com/roquerodrigo/ha-ttlock-ble/compare/v3.2.0...v3.2.1) (2026-05-25)
+
+
+### Documentation
+
+* fix CI badge and drop license badge ([bff31f3](https://github.com/roquerodrigo/ha-ttlock-ble/commit/bff31f3566da79658db7675545307ee9931b3311))
+* fix CI badge and drop license badge ([9cd5b30](https://github.com/roquerodrigo/ha-ttlock-ble/commit/9cd5b300c9cd0d1243bf3f2bfb98f1ec0cef8cf7))
+
 ## [3.2.0](https://github.com/roquerodrigo/ha-ttlock-ble/compare/v3.1.0...v3.2.0) (2026-05-18)
 
 
