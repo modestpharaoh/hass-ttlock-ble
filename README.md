@@ -1,9 +1,6 @@
 # Home Assistant TTLock BLE
 
-[![HACS Validate](https://github.com/roquerodrigo/ha-ttlock-ble/actions/workflows/validate.yml/badge.svg)](https://github.com/roquerodrigo/ha-ttlock-ble/actions/workflows/validate.yml)
-[![Lint](https://github.com/roquerodrigo/ha-ttlock-ble/actions/workflows/lint.yml/badge.svg)](https://github.com/roquerodrigo/ha-ttlock-ble/actions/workflows/lint.yml)
-[![CodeQL](https://github.com/roquerodrigo/ha-ttlock-ble/actions/workflows/codeql.yml/badge.svg)](https://github.com/roquerodrigo/ha-ttlock-ble/actions/workflows/codeql.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/roquerodrigo/ha-ttlock-ble/actions/workflows/ci.yml/badge.svg)](https://github.com/roquerodrigo/ha-ttlock-ble/actions/workflows/ci.yml)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
 Local control of TTLock smart locks over Bluetooth, for [Home Assistant](https://www.home-assistant.io/). Lock / unlock, battery level and real-time push events flow over BLE — no cloud round-trip on every operation. Built on the sibling Python SDK [`ttlock-ble`](https://github.com/roquerodrigo/ttlock-ble).
