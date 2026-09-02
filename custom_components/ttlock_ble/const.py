@@ -14,3 +14,8 @@ CONF_PERMANENT_CONNECTION = "permanent_connection"
 
 CLOUD_ERR_NEW_DEVICE_LOGIN = -1014
 HTTP_STATUS_UNAUTHORIZED = frozenset({401, 403})
+
+SERVICE_GET_PASSAGE_MODE = "get_passage_mode"
+SERVICE_SET_PASSAGE_MODE = "set_passage_mode"
+SERVICE_DELETE_PASSAGE_MODE = "delete_passage_mode"
+SERVICE_CLEAR_PASSAGE_MODE = "clear_passage_mode"

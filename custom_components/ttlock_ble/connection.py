@@ -25,6 +25,12 @@ from ttlock_ble import TTLockClient, TTLockError
 
 from .const import DOMAIN, LOGGER
 from .data import TtlockBleLogCursor
+from .passage import (
+    async_client_clear_passage_mode,
+    async_client_delete_passage_mode,
+    async_client_get_passage_mode,
+    async_client_set_passage_mode,
+)
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -33,6 +39,8 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
     from ttlock_ble import DeviceInfo, LockEvent, LockState, LogEntry, VirtualKey
+
+    from .data import TtlockBlePassageSchedule
 
 
 RECONNECT_INITIAL_BACKOFF = 1.0
@@ -253,6 +261,50 @@ class TtlockBleConnection:
     async def async_set_lock_sound(self, *, enabled: bool) -> None:
         """Turn the lock's beep on or off (raises on failure)."""
         await self._async_run_command("sound_on" if enabled else "sound_off")
+
+    async def async_get_passage_mode(self) -> list[TtlockBlePassageSchedule]:
+        """Fetch all passage mode schedule slots from the lock."""
+        async with self._lock:
+            client = await self._async_ensure_connected_locked()
+            if client is None:
+                raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
+            return await async_client_get_passage_mode(client)
+
+    async def async_set_passage_mode(
+        self,
+        schedules: list[TtlockBlePassageSchedule],
+        *,
+        clear_existing: bool = False,
+    ) -> None:
+        """Set one or more passage mode schedule slots on the lock."""
+        async with self._lock:
+            client = await self._async_ensure_connected_locked()
+            if client is None:
+                raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
+            await async_client_set_passage_mode(
+                client,
+                schedules,
+                clear_existing=clear_existing,
+            )
+
+    async def async_delete_passage_mode(
+        self,
+        schedule: TtlockBlePassageSchedule,
+    ) -> None:
+        """Delete a specific passage mode schedule slot from the lock."""
+        async with self._lock:
+            client = await self._async_ensure_connected_locked()
+            if client is None:
+                raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
+            await async_client_delete_passage_mode(client, schedule)
+
+    async def async_clear_passage_mode(self) -> None:
+        """Clear all passage mode schedule slots from the lock."""
+        async with self._lock:
+            client = await self._async_ensure_connected_locked()
+            if client is None:
+                raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
+            await async_client_clear_passage_mode(client)
 
     async def async_get_operation_log(self) -> list[LogEntry]:
         """
