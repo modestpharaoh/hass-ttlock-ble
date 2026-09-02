@@ -77,6 +77,16 @@ def connection_signal(mac: str) -> str:
     return f"{DOMAIN}_connection_{mac.lower()}"
 
 
+def auto_lock_signal(mac: str) -> str:
+    """Dispatcher signal that carries auto-lock delay changes for `mac`."""
+    return f"{DOMAIN}_auto_lock_{mac.lower()}"
+
+
+def passage_mode_signal(mac: str) -> str:
+    """Dispatcher signal that carries passage mode state changes for `mac`."""
+    return f"{DOMAIN}_passage_mode_{mac.lower()}"
+
+
 class TtlockBleConnection:
     """Maintain a long-lived BLE session with one TTLock lock."""
 
@@ -109,6 +119,10 @@ class TtlockBleConnection:
         self._log_seeded = cursor.seeded
         self._on_records_seen = cursor.on_move
         self._broadcast_connected = False
+        self._auto_lock_seconds: int | None = None
+        self._auto_lock_limits: tuple[int | None, int | None] = (None, None)
+        self._last_active_auto_lock: int = 10
+        self._passage_mode_active: bool | None = None
 
     @property
     def key(self) -> VirtualKey:
@@ -119,6 +133,26 @@ class TtlockBleConnection:
     def is_connected(self) -> bool:
         """True iff the underlying `TTLockClient` is currently connected."""
         return self._client is not None and self._client.is_connected
+
+    @property
+    def auto_lock_seconds(self) -> int | None:
+        """Return the currently cached auto-lock delay in seconds."""
+        return self._auto_lock_seconds
+
+    @property
+    def auto_lock_limits(self) -> tuple[int | None, int | None]:
+        """Return the min/max auto-lock delay supported by hardware."""
+        return self._auto_lock_limits
+
+    @property
+    def last_active_auto_lock(self) -> int:
+        """Return the last active non-zero auto-lock delay."""
+        return self._last_active_auto_lock
+
+    @property
+    def passage_mode_active(self) -> bool | None:
+        """Return whether passage mode is currently known to be enabled."""
+        return self._passage_mode_active
 
     async def async_start(self) -> None:
         """
@@ -275,7 +309,14 @@ class TtlockBleConnection:
             client = await self._async_ensure_connected_locked()
             if client is None:
                 raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
-            return await async_client_get_passage_mode(client)
+            schedules = await async_client_get_passage_mode(client)
+            self._passage_mode_active = bool(schedules)
+            async_dispatcher_send(
+                self._hass,
+                passage_mode_signal(self._key.lockMac),
+                self._passage_mode_active,
+            )
+            return schedules
 
     async def async_set_passage_mode(
         self,
@@ -292,6 +333,12 @@ class TtlockBleConnection:
                 client,
                 schedules,
                 clear_existing=clear_existing,
+            )
+            self._passage_mode_active = bool(schedules)
+            async_dispatcher_send(
+                self._hass,
+                passage_mode_signal(self._key.lockMac),
+                self._passage_mode_active,
             )
 
     async def async_delete_passage_mode(
@@ -312,6 +359,12 @@ class TtlockBleConnection:
             if client is None:
                 raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
             await async_client_clear_passage_mode(client)
+            self._passage_mode_active = False
+            async_dispatcher_send(
+                self._hass,
+                passage_mode_signal(self._key.lockMac),
+                False,
+            )
 
     async def async_get_auto_lock_info(self) -> dict[str, Any]:
         """Fetch current auto-lock duration and hardware limits."""
@@ -328,12 +381,37 @@ class TtlockBleConnection:
                 max_sec = limits.max_allowed
             except Exception:  # noqa: BLE001
                 pass
+            self._auto_lock_seconds = seconds
+            if seconds > 0:
+                self._last_active_auto_lock = seconds
+            self._auto_lock_limits = (min_sec, max_sec)
+            async_dispatcher_send(
+                self._hass,
+                auto_lock_signal(self._key.lockMac),
+                seconds,
+            )
             return {
                 "auto_lock_seconds": seconds,
                 "enabled": seconds > 0,
                 "min_seconds": min_sec,
                 "max_seconds": max_sec,
             }
+
+    async def async_set_auto_lock_time(self, seconds: int) -> None:
+        """Set auto-lock delay in seconds (0 = disabled)."""
+        async with self._lock:
+            client = await self._async_ensure_connected_locked()
+            if client is None:
+                raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
+            await client.set_auto_lock_time(seconds)
+            self._auto_lock_seconds = seconds
+            if seconds > 0:
+                self._last_active_auto_lock = seconds
+            async_dispatcher_send(
+                self._hass,
+                auto_lock_signal(self._key.lockMac),
+                seconds,
+            )
 
     async def async_get_lock_clock(self) -> dict[str, Any]:
         """Read the lock's real-time hardware clock and compute drift."""
