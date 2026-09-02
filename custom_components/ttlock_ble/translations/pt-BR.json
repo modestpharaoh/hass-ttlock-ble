@@ -123,6 +123,17 @@
         "name": "Conexão Bluetooth"
       }
     },
+    "button": {
+      "sync_clock": {
+        "name": "Sincronizar relógio"
+      },
+      "sync_log": {
+        "name": "Sincronizar registros"
+      },
+      "refresh_state": {
+        "name": "Atualizar estado"
+      }
+    },
     "event": {
       "log": {
         "name": "Registro",

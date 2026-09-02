@@ -123,6 +123,17 @@
         "name": "Bluetooth connection"
       }
     },
+    "button": {
+      "sync_clock": {
+        "name": "Sync clock"
+      },
+      "sync_log": {
+        "name": "Sync log"
+      },
+      "refresh_state": {
+        "name": "Refresh state"
+      }
+    },
     "event": {
       "log": {
         "name": "Log",
