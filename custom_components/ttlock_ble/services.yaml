@@ -123,3 +123,102 @@ clear_passage_mode:
     entity:
       integration: ttlock_ble
       domain: lock
+
+get_auto_lock_time:
+  name: Get auto-lock time
+  description: Query the lock's current auto-lock duration (in seconds) and hardware limits over Bluetooth.
+  target:
+    device:
+      integration: ttlock_ble
+    entity:
+      integration: ttlock_ble
+      domain: lock
+
+get_lock_time:
+  name: Get lock clock
+  description: Read the lock's internal hardware clock over Bluetooth and calculate drift against Home Assistant local time.
+  target:
+    device:
+      integration: ttlock_ble
+    entity:
+      integration: ttlock_ble
+      domain: lock
+
+get_operation_log:
+  name: Get operation log
+  description: Fetch recent operation event records directly from the lock's on-chip memory over Bluetooth.
+  target:
+    device:
+      integration: ttlock_ble
+    entity:
+      integration: ttlock_ble
+      domain: lock
+  fields:
+    max_entries:
+      name: Max entries
+      description: Maximum number of log records to fetch.
+      default: 50
+      example: 20
+      selector:
+        number:
+          min: 1
+          max: 100
+          mode: box
+    from_sequence:
+      name: From sequence
+      description: Optional starting sequence number. If omitted, automatically starts at the latest records window (highest seen - max_entries + 1).
+      selector:
+        number:
+          min: 0
+          max: 65535
+          mode: box
+    to_sequence:
+      name: To sequence
+      description: Optional ending sequence number (inclusive).
+      selector:
+        number:
+          min: 0
+          max: 65535
+          mode: box
+    start_date:
+      name: Start date
+      description: Filter log records occurring on or after this timestamp (e.g. "2026-09-01" or "2026-09-01 08:00").
+      example: "2026-09-01"
+      selector:
+        text: {}
+    end_date:
+      name: End date
+      description: Filter log records occurring on or before this timestamp (e.g. "2026-09-02" or "2026-09-02 23:59").
+      example: "2026-09-02"
+      selector:
+        text: {}
+
+get_passcodes:
+  name: Get passcodes
+  description: Query all programmed keyboard passcodes (PINs), types, and validity periods from the lock over Bluetooth.
+  target:
+    device:
+      integration: ttlock_ble
+    entity:
+      integration: ttlock_ble
+      domain: lock
+
+get_cards:
+  name: Get IC cards
+  description: Query all enrolled RFID / IC cards and validity periods from the lock over Bluetooth.
+  target:
+    device:
+      integration: ttlock_ble
+    entity:
+      integration: ttlock_ble
+      domain: lock
+
+get_fingerprints:
+  name: Get fingerprints
+  description: Query all enrolled biometric fingerprints and validity periods from the lock over Bluetooth.
+  target:
+    device:
+      integration: ttlock_ble
+    entity:
+      integration: ttlock_ble
+      domain: lock

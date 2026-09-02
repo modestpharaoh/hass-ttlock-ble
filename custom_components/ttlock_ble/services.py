@@ -25,7 +25,13 @@ from .const import (
     LOGGER,
     SERVICE_CLEAR_PASSAGE_MODE,
     SERVICE_DELETE_PASSAGE_MODE,
+    SERVICE_GET_AUTO_LOCK_TIME,
+    SERVICE_GET_CARDS,
+    SERVICE_GET_FINGERPRINTS,
+    SERVICE_GET_LOCK_TIME,
+    SERVICE_GET_OPERATION_LOG,
     SERVICE_GET_PASSAGE_MODE,
+    SERVICE_GET_PASSCODES,
     SERVICE_SET_PASSAGE_MODE,
 )
 from .passage import PASSAGE_TYPE_WEEKLY
@@ -82,6 +88,17 @@ SCHEMA_BASE_TARGET = {
 SCHEMA_GET_PASSAGE_MODE = vol.Schema(SCHEMA_BASE_TARGET)
 
 SCHEMA_CLEAR_PASSAGE_MODE = vol.Schema(SCHEMA_BASE_TARGET)
+
+SCHEMA_GET_OPERATION_LOG = vol.Schema(
+    {
+        **SCHEMA_BASE_TARGET,
+        vol.Optional("max_entries", default=50): cv.positive_int,
+        vol.Optional("from_sequence"): cv.positive_int,
+        vol.Optional("to_sequence"): cv.positive_int,
+        vol.Optional("start_date"): cv.string,
+        vol.Optional("end_date"): cv.string,
+    }
+)
 
 SCHEMA_SET_PASSAGE_MODE = vol.Schema(
     {
@@ -323,6 +340,107 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     f"Failed to clear passage mode for {conn.key.lockMac}: {exc}"
                 ) from exc
 
+    async def async_handle_get_auto_lock_time(call: ServiceCall) -> ServiceResponse:
+        """Handle ttlock_ble.get_auto_lock_time."""
+        connections = _async_resolve_connections(hass, call)
+        results: list[dict[str, object]] = []
+        for conn in connections:
+            try:
+                info = await conn.async_get_auto_lock_info()
+                results.append({"lock_mac": conn.key.lockMac, **info})
+            except Exception as exc:
+                raise HomeAssistantError(
+                    f"Failed to get auto-lock time for {conn.key.lockMac}: {exc}"
+                ) from exc
+        return {"auto_lock": results}
+
+    async def async_handle_get_lock_time(call: ServiceCall) -> ServiceResponse:
+        """Handle ttlock_ble.get_lock_time."""
+        connections = _async_resolve_connections(hass, call)
+        results: list[dict[str, object]] = []
+        for conn in connections:
+            try:
+                clock_info = await conn.async_get_lock_clock()
+                results.append({"lock_mac": conn.key.lockMac, **clock_info})
+            except Exception as exc:
+                raise HomeAssistantError(
+                    f"Failed to get clock time for {conn.key.lockMac}: {exc}"
+                ) from exc
+        return {"lock_times": results}
+
+    async def async_handle_get_operation_log(call: ServiceCall) -> ServiceResponse:
+        """Handle ttlock_ble.get_operation_log."""
+        connections = _async_resolve_connections(hass, call)
+        max_entries = int(call.data.get("max_entries", 50))
+        from_sequence = call.data.get("from_sequence")
+        from_seq_int = int(from_sequence) if from_sequence is not None else None
+        to_sequence = call.data.get("to_sequence")
+        to_seq_int = int(to_sequence) if to_sequence is not None else None
+        start_date = call.data.get("start_date")
+        end_date = call.data.get("end_date")
+        results: list[dict[str, object]] = []
+        for conn in connections:
+            try:
+                records = await conn.async_fetch_operation_log(
+                    max_entries=max_entries,
+                    from_sequence=from_seq_int,
+                    to_sequence=to_seq_int,
+                    start_date=start_date,
+                    end_date=end_date,
+                )
+                for rec in records:
+                    results.append({"lock_mac": conn.key.lockMac, **rec})
+            except Exception as exc:
+                raise HomeAssistantError(
+                    f"Failed to get operation log for {conn.key.lockMac}: {exc}"
+                ) from exc
+        return {"records": results}
+
+    async def async_handle_get_passcodes(call: ServiceCall) -> ServiceResponse:
+        """Handle ttlock_ble.get_passcodes."""
+        connections = _async_resolve_connections(hass, call)
+        results: list[dict[str, object]] = []
+        for conn in connections:
+            try:
+                codes = await conn.async_get_passcodes()
+                for code in codes:
+                    results.append({"lock_mac": conn.key.lockMac, **code})
+            except Exception as exc:
+                raise HomeAssistantError(
+                    f"Failed to get passcodes for {conn.key.lockMac}: {exc}"
+                ) from exc
+        return {"passcodes": results}
+
+    async def async_handle_get_cards(call: ServiceCall) -> ServiceResponse:
+        """Handle ttlock_ble.get_cards."""
+        connections = _async_resolve_connections(hass, call)
+        results: list[dict[str, object]] = []
+        for conn in connections:
+            try:
+                cards = await conn.async_get_cards()
+                for card in cards:
+                    results.append({"lock_mac": conn.key.lockMac, **card})
+            except Exception as exc:
+                raise HomeAssistantError(
+                    f"Failed to get cards for {conn.key.lockMac}: {exc}"
+                ) from exc
+        return {"cards": results}
+
+    async def async_handle_get_fingerprints(call: ServiceCall) -> ServiceResponse:
+        """Handle ttlock_ble.get_fingerprints."""
+        connections = _async_resolve_connections(hass, call)
+        results: list[dict[str, object]] = []
+        for conn in connections:
+            try:
+                fps = await conn.async_get_fingerprints()
+                for fp in fps:
+                    results.append({"lock_mac": conn.key.lockMac, **fp})
+            except Exception as exc:
+                raise HomeAssistantError(
+                    f"Failed to get fingerprints for {conn.key.lockMac}: {exc}"
+                ) from exc
+        return {"fingerprints": results}
+
     hass.services.async_register(
         DOMAIN,
         SERVICE_GET_PASSAGE_MODE,
@@ -348,6 +466,48 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         async_handle_clear_passage_mode,
         schema=SCHEMA_CLEAR_PASSAGE_MODE,
     )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_AUTO_LOCK_TIME,
+        async_handle_get_auto_lock_time,
+        schema=SCHEMA_GET_PASSAGE_MODE,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_LOCK_TIME,
+        async_handle_get_lock_time,
+        schema=SCHEMA_GET_PASSAGE_MODE,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_OPERATION_LOG,
+        async_handle_get_operation_log,
+        schema=SCHEMA_GET_OPERATION_LOG,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_PASSCODES,
+        async_handle_get_passcodes,
+        schema=SCHEMA_GET_PASSAGE_MODE,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_CARDS,
+        async_handle_get_cards,
+        schema=SCHEMA_GET_PASSAGE_MODE,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_FINGERPRINTS,
+        async_handle_get_fingerprints,
+        schema=SCHEMA_GET_PASSAGE_MODE,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
     LOGGER.debug("Registered TTLock BLE services")
 
 
@@ -363,4 +523,10 @@ async def async_unload_services(hass: HomeAssistant) -> None:
     hass.services.async_remove(DOMAIN, SERVICE_SET_PASSAGE_MODE)
     hass.services.async_remove(DOMAIN, SERVICE_DELETE_PASSAGE_MODE)
     hass.services.async_remove(DOMAIN, SERVICE_CLEAR_PASSAGE_MODE)
+    hass.services.async_remove(DOMAIN, SERVICE_GET_AUTO_LOCK_TIME)
+    hass.services.async_remove(DOMAIN, SERVICE_GET_LOCK_TIME)
+    hass.services.async_remove(DOMAIN, SERVICE_GET_OPERATION_LOG)
+    hass.services.async_remove(DOMAIN, SERVICE_GET_PASSCODES)
+    hass.services.async_remove(DOMAIN, SERVICE_GET_CARDS)
+    hass.services.async_remove(DOMAIN, SERVICE_GET_FINGERPRINTS)
     LOGGER.debug("Unregistered TTLock BLE services")
