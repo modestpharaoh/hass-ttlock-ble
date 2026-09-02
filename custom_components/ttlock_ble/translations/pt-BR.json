@@ -121,6 +121,9 @@
     "binary_sensor": {
       "connection": {
         "name": "Conexão Bluetooth"
+      },
+      "passage_mode_active": {
+        "name": "Modo de passagem ativo"
       }
     },
     "button": {
@@ -141,6 +144,9 @@
       },
       "sync_fingerprints": {
         "name": "Sincronizar digitais"
+      },
+      "sync_passage_mode": {
+        "name": "Sincronizar modo de passagem"
       }
     },
     "event": {
@@ -190,6 +196,9 @@
       },
       "fingerprints_count": {
         "name": "Quantidade de digitais"
+      },
+      "passage_mode_schedule": {
+        "name": "Programação do modo de passagem"
       }
     },
     "switch": {

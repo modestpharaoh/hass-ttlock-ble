@@ -52,6 +52,9 @@ async def async_setup_entry(
         entities.append(
             TtlockBleSyncFingerprintsButton(data.coordinator, key, connection)
         )
+        entities.append(
+            TtlockBleSyncPassageModeButton(data.coordinator, key, connection)
+        )
 
     async_add_entities(entities)
 
@@ -199,4 +202,26 @@ class TtlockBleSyncFingerprintsButton(TtlockBleButtonEntity):
         except TTLockError as exc:
             raise HomeAssistantError(
                 f"Failed to sync fingerprints for {self._key.lockMac}: {exc}"
+            ) from exc
+
+
+class TtlockBleSyncPassageModeButton(TtlockBleButtonEntity):
+    """Query passage mode schedules from the lock and refresh the status and sensors."""
+
+    _attr_translation_key = "sync_passage_mode"
+    _attr_icon = "mdi:calendar-sync"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    @property
+    def unique_id(self) -> str:
+        """Return a stable unique id."""
+        return f"{self._key.lockMac}_sync_passage_mode"
+
+    async def async_press(self) -> None:
+        """Handle the button press."""
+        try:
+            await self._connection.async_get_passage_mode()
+        except TTLockError as exc:
+            raise HomeAssistantError(
+                f"Failed to sync passage mode for {self._key.lockMac}: {exc}"
             ) from exc

@@ -101,5 +101,5 @@ async def test_async_setup_entry_buttons() -> None:
         created_entities.extend(entities)
 
     await async_setup_entry(hass, entry, mock_add)
-    # Should create 6 buttons (sync_clock, sync_log, refresh_state, sync_passcodes, sync_cards, sync_fingerprints)
-    assert len(created_entities) == 6
+    # Should create 7 buttons (sync_clock, sync_log, refresh_state, sync_passcodes, sync_cards, sync_fingerprints, sync_passage_mode)
+    assert len(created_entities) == 7

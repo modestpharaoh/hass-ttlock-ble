@@ -128,6 +128,7 @@ class TtlockBleConnection:
         self._auto_lock_limits: tuple[int | None, int | None] = (None, None)
         self._last_active_auto_lock: int = 10
         self._passage_mode_active: bool | None = None
+        self._passage_schedules: list[TtlockBlePassageSchedule] = []
         self._credentials_counts: dict[str, int | None] = {
             "passcodes": None,
             "cards": None,
@@ -163,6 +164,11 @@ class TtlockBleConnection:
     def passage_mode_active(self) -> bool | None:
         """Return whether passage mode is currently known to be enabled."""
         return self._passage_mode_active
+
+    @property
+    def passage_schedules(self) -> list[TtlockBlePassageSchedule]:
+        """Return cached passage mode schedule slots."""
+        return self._passage_schedules
 
     def get_credential_count(self, cred_type: str) -> int | None:
         """Return cached count for a credential type."""
@@ -346,11 +352,12 @@ class TtlockBleConnection:
             if client is None:
                 raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
             schedules = await async_client_get_passage_mode(client)
+            self._passage_schedules = schedules
             self._passage_mode_active = bool(schedules)
             async_dispatcher_send(
                 self._hass,
                 passage_mode_signal(self._key.lockMac),
-                self._passage_mode_active,
+                schedules,
             )
             return schedules
 
@@ -370,11 +377,12 @@ class TtlockBleConnection:
                 schedules,
                 clear_existing=clear_existing,
             )
+            self._passage_schedules = schedules
             self._passage_mode_active = bool(schedules)
             async_dispatcher_send(
                 self._hass,
                 passage_mode_signal(self._key.lockMac),
-                self._passage_mode_active,
+                schedules,
             )
 
     async def async_delete_passage_mode(
@@ -395,11 +403,12 @@ class TtlockBleConnection:
             if client is None:
                 raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
             await async_client_clear_passage_mode(client)
+            self._passage_schedules = []
             self._passage_mode_active = False
             async_dispatcher_send(
                 self._hass,
                 passage_mode_signal(self._key.lockMac),
-                False,
+                [],
             )
 
     async def async_get_auto_lock_info(self) -> dict[str, Any]:

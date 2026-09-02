@@ -121,6 +121,9 @@
     "binary_sensor": {
       "connection": {
         "name": "Bluetooth connection"
+      },
+      "passage_mode_active": {
+        "name": "Passage mode active"
       }
     },
     "button": {
@@ -141,6 +144,9 @@
       },
       "sync_fingerprints": {
         "name": "Sync fingerprints"
+      },
+      "sync_passage_mode": {
+        "name": "Sync passage mode"
       }
     },
     "event": {
@@ -190,6 +196,9 @@
       },
       "fingerprints_count": {
         "name": "Fingerprints count"
+      },
+      "passage_mode_schedule": {
+        "name": "Passage mode schedule"
       }
     },
     "switch": {
