@@ -43,6 +43,15 @@ async def async_setup_entry(
         entities.append(
             TtlockBleRefreshStateButton(data.coordinator, key, connection)
         )
+        entities.append(
+            TtlockBleSyncPasscodesButton(data.coordinator, key, connection)
+        )
+        entities.append(
+            TtlockBleSyncCardsButton(data.coordinator, key, connection)
+        )
+        entities.append(
+            TtlockBleSyncFingerprintsButton(data.coordinator, key, connection)
+        )
 
     async_add_entities(entities)
 
@@ -124,4 +133,70 @@ class TtlockBleRefreshStateButton(TtlockBleButtonEntity):
         except TTLockError as exc:
             raise HomeAssistantError(
                 f"Failed to refresh state for {self._key.lockMac}: {exc}"
+            ) from exc
+
+
+class TtlockBleSyncPasscodesButton(TtlockBleButtonEntity):
+    """Query passcodes from the lock and refresh the passcodes count."""
+
+    _attr_translation_key = "sync_passcodes"
+    _attr_icon = "mdi:form-textbox-password"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    @property
+    def unique_id(self) -> str:
+        """Return a stable unique id."""
+        return f"{self._key.lockMac}_sync_passcodes"
+
+    async def async_press(self) -> None:
+        """Handle the button press."""
+        try:
+            await self._connection.async_get_passcodes()
+        except TTLockError as exc:
+            raise HomeAssistantError(
+                f"Failed to sync passcodes for {self._key.lockMac}: {exc}"
+            ) from exc
+
+
+class TtlockBleSyncCardsButton(TtlockBleButtonEntity):
+    """Query IC cards from the lock and refresh the cards count."""
+
+    _attr_translation_key = "sync_cards"
+    _attr_icon = "mdi:smart-card-outline"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    @property
+    def unique_id(self) -> str:
+        """Return a stable unique id."""
+        return f"{self._key.lockMac}_sync_cards"
+
+    async def async_press(self) -> None:
+        """Handle the button press."""
+        try:
+            await self._connection.async_get_cards()
+        except TTLockError as exc:
+            raise HomeAssistantError(
+                f"Failed to sync cards for {self._key.lockMac}: {exc}"
+            ) from exc
+
+
+class TtlockBleSyncFingerprintsButton(TtlockBleButtonEntity):
+    """Query fingerprints from the lock and refresh the fingerprints count."""
+
+    _attr_translation_key = "sync_fingerprints"
+    _attr_icon = "mdi:fingerprint"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    @property
+    def unique_id(self) -> str:
+        """Return a stable unique id."""
+        return f"{self._key.lockMac}_sync_fingerprints"
+
+    async def async_press(self) -> None:
+        """Handle the button press."""
+        try:
+            await self._connection.async_get_fingerprints()
+        except TTLockError as exc:
+            raise HomeAssistantError(
+                f"Failed to sync fingerprints for {self._key.lockMac}: {exc}"
             ) from exc

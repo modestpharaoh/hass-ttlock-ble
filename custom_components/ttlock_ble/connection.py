@@ -87,6 +87,11 @@ def passage_mode_signal(mac: str) -> str:
     return f"{DOMAIN}_passage_mode_{mac.lower()}"
 
 
+def credentials_count_signal(mac: str) -> str:
+    """Dispatcher signal that carries credential count changes for `mac`."""
+    return f"{DOMAIN}_credentials_count_{mac.lower()}"
+
+
 class TtlockBleConnection:
     """Maintain a long-lived BLE session with one TTLock lock."""
 
@@ -123,6 +128,11 @@ class TtlockBleConnection:
         self._auto_lock_limits: tuple[int | None, int | None] = (None, None)
         self._last_active_auto_lock: int = 10
         self._passage_mode_active: bool | None = None
+        self._credentials_counts: dict[str, int | None] = {
+            "passcodes": None,
+            "cards": None,
+            "fingerprints": None,
+        }
 
     @property
     def key(self) -> VirtualKey:
@@ -153,6 +163,32 @@ class TtlockBleConnection:
     def passage_mode_active(self) -> bool | None:
         """Return whether passage mode is currently known to be enabled."""
         return self._passage_mode_active
+
+    def get_credential_count(self, cred_type: str) -> int | None:
+        """Return cached count for a credential type."""
+        return self._credentials_counts.get(cred_type)
+
+    def set_credential_count(self, cred_type: str, count: int) -> None:
+        """Update cached count for a credential type and notify listeners."""
+        self._credentials_counts[cred_type] = count
+        async_dispatcher_send(
+            self._hass,
+            credentials_count_signal(self._key.lockMac),
+            cred_type,
+            count,
+        )
+
+    async def async_fetch_credentials_count(self, cred_type: str) -> int | None:
+        """Fetch credentials of given type over BLE and update count."""
+        if cred_type == "passcodes":
+            creds = await self.async_get_passcodes()
+        elif cred_type == "cards":
+            creds = await self.async_get_cards()
+        elif cred_type == "fingerprints":
+            creds = await self.async_get_fingerprints()
+        else:
+            return None
+        return len(creds)
 
     async def async_start(self) -> None:
         """
@@ -548,7 +584,9 @@ class TtlockBleConnection:
             client = await self._async_ensure_connected_locked()
             if client is None:
                 raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
-            return await async_client_get_passcodes(client)
+            passcodes = await async_client_get_passcodes(client)
+            self.set_credential_count("passcodes", len(passcodes))
+            return passcodes
 
     async def async_get_cards(self) -> list[dict[str, Any]]:
         """Query all enrolled RFID / IC cards from the lock."""
@@ -556,7 +594,9 @@ class TtlockBleConnection:
             client = await self._async_ensure_connected_locked()
             if client is None:
                 raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
-            return await async_client_get_ic_cards(client)
+            cards = await async_client_get_ic_cards(client)
+            self.set_credential_count("cards", len(cards))
+            return cards
 
     async def async_get_fingerprints(self) -> list[dict[str, Any]]:
         """Query all enrolled biometric fingerprints from the lock."""
@@ -564,7 +604,9 @@ class TtlockBleConnection:
             client = await self._async_ensure_connected_locked()
             if client is None:
                 raise TTLockError(f"Lock {self._key.lockMac} is not reachable")
-            return await async_client_get_fingerprints(client)
+            fingerprints = await async_client_get_fingerprints(client)
+            self.set_credential_count("fingerprints", len(fingerprints))
+            return fingerprints
 
     async def async_get_operation_log(self) -> list[LogEntry]:
         """

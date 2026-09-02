@@ -270,6 +270,13 @@ async def async_client_get_ic_cards(
             "get_cards",
         )
         if status != ResponseStatus.SUCCESS:
+            if sequence == 0 and status in (ResponseStatus.FAILED, 0x00, 0x02):
+                LOGGER.info(
+                    "Lock %s does not support IC cards (status %#x); returning empty list",
+                    client.key.lockMac,
+                    status,
+                )
+                return []
             raise TTLockError(
                 f"Failed to get_cards: lock returned status {status:#x}"
             )
@@ -310,6 +317,13 @@ async def async_client_get_fingerprints(
             "get_fingerprints",
         )
         if status != ResponseStatus.SUCCESS:
+            if sequence == 0 and status in (ResponseStatus.FAILED, 0x00, 0x02):
+                LOGGER.info(
+                    "Lock %s does not support fingerprints (status %#x); returning empty list",
+                    client.key.lockMac,
+                    status,
+                )
+                return []
             raise TTLockError(
                 f"Failed to get_fingerprints: lock returned status {status:#x}"
             )
