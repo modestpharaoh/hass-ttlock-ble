@@ -8,14 +8,14 @@ import pytest
 from homeassistant.util import dt as dt_util
 from ttlock_ble import DeviceInfo
 
-from custom_components.ttlock_ble.clock_sync_store import TtlockBleClockSyncStore
-from custom_components.ttlock_ble.coordinator import (
+from custom_components.hass_ttlock_ble.clock_sync_store import TtlockBleClockSyncStore
+from custom_components.hass_ttlock_ble.coordinator import (
     CLOCK_CHECK_INTERVAL_SECONDS,
     CLOCK_DRIFT_THRESHOLD_SECONDS,
     TtlockBleDataUpdateCoordinator,
     _parse_lock_state,
 )
-from custom_components.ttlock_ble.device_description_store import (
+from custom_components.hass_ttlock_ble.device_description_store import (
     TtlockBleDeviceDescriptionStore,
 )
 
@@ -268,7 +268,7 @@ async def test_unreachable_lock_is_retried_after_the_cooldown(hass) -> None:
     from homeassistant.util import dt as dt_util
     from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
-    from custom_components.ttlock_ble.coordinator import LOG_RETRY_COOLDOWN_SECONDS
+    from custom_components.hass_ttlock_ble.coordinator import LOG_RETRY_COOLDOWN_SECONDS
 
     conn = _mock_connection()
     conn.async_get_operation_log = AsyncMock(return_value=[])
@@ -347,7 +347,7 @@ async def test_a_pending_read_is_retried_on_a_timer(hass) -> None:
     from homeassistant.util import dt as dt_util
     from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
-    from custom_components.ttlock_ble.coordinator import LOG_RETRY_COOLDOWN_SECONDS
+    from custom_components.hass_ttlock_ble.coordinator import LOG_RETRY_COOLDOWN_SECONDS
 
     conn = _mock_connection()
     coordinator = _log_coordinator(hass, conn)
@@ -378,7 +378,7 @@ async def test_the_retry_stops_once_the_flag_clears(hass) -> None:
     from homeassistant.util import dt as dt_util
     from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
-    from custom_components.ttlock_ble.coordinator import LOG_RETRY_COOLDOWN_SECONDS
+    from custom_components.hass_ttlock_ble.coordinator import LOG_RETRY_COOLDOWN_SECONDS
 
     async_fire_time_changed(
         hass,
@@ -428,7 +428,7 @@ async def test_the_read_is_tried_again_after_the_cooldown(hass) -> None:
     from homeassistant.util import dt as dt_util
     from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
-    from custom_components.ttlock_ble.coordinator import STATE_PROBE_COOLDOWN_SECONDS
+    from custom_components.hass_ttlock_ble.coordinator import STATE_PROBE_COOLDOWN_SECONDS
 
     conn = _mock_connection()
     coordinator = _log_coordinator(hass, conn)
@@ -561,7 +561,7 @@ async def test_the_hardware_strings_reach_the_registry_device(
     from homeassistant.helpers import device_registry
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     entry = MockConfigEntry(domain=DOMAIN, data={}, unique_id="u")
     entry.add_to_hass(hass)
@@ -592,7 +592,7 @@ async def test_a_field_the_lock_leaves_out_keeps_what_the_device_had(
     from homeassistant.helpers import device_registry
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     entry = MockConfigEntry(domain=DOMAIN, data={}, unique_id="u")
     entry.add_to_hass(hass)
@@ -662,7 +662,7 @@ async def test_a_cancelled_retry_never_fires_again(hass) -> None:
     from homeassistant.util import dt as dt_util
     from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
-    from custom_components.ttlock_ble.coordinator import LOG_RETRY_COOLDOWN_SECONDS
+    from custom_components.hass_ttlock_ble.coordinator import LOG_RETRY_COOLDOWN_SECONDS
 
     conn = _mock_connection()
     coordinator = _log_coordinator(hass, conn)

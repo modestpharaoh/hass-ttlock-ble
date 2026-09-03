@@ -67,25 +67,25 @@ The event entity classifies each record as `unlock`, `lock`, `unlock_failed`, `p
 
 ## Actions (Services)
 
-The integration registers custom actions under the `ttlock_ble` domain to inspect, configure, and manage lock settings over Bluetooth.
+The integration registers custom actions under the `hass_ttlock_ble` domain to inspect, configure, and manage lock settings over Bluetooth.
 
 | Action | Description | Target |
 |---|---|---|
-| `ttlock_ble.set_passage_mode` | Configure one or more passage mode intervals on the lock. Supports `slots` (list of schedules), `start_time`, `end_time`, `days` (or `everyday`), `all_day`, and `clear_existing`. | Lock entity / device |
-| `ttlock_ble.get_passage_mode` | Read all configured passage mode schedule intervals directly from lock memory over Bluetooth. | Lock entity / device |
-| `ttlock_ble.delete_passage_mode` | Delete a specific passage mode interval by start time, end time, and day. | Lock entity / device |
-| `ttlock_ble.clear_passage_mode` | Remove all configured passage mode schedule intervals from the lock. | Lock entity / device |
-| `ttlock_ble.get_auto_lock_time` | Query current auto-lock duration in seconds and the lock hardware's supported min/max limits. | Lock entity / device |
-| `ttlock_ble.get_lock_time` | Query the lock's internal real-time hardware clock and compute current drift relative to Home Assistant local time. | Lock entity / device |
-| `ttlock_ble.get_operation_log` | Fetch recent operation-log records from the lock's on-chip memory. Supports `max_entries`, `from_sequence`, `to_sequence`, `start_date`, and `end_date`. | Lock entity / device |
-| `ttlock_ble.get_passcodes` | Query all programmed keyboard passcodes (PINs), passcode types, and validity periods. | Lock entity / device |
-| `ttlock_ble.get_cards` | Query all enrolled RFID / IC cards, card numbers, and validity periods. | Lock entity / device |
-| `ttlock_ble.get_fingerprints` | Query all enrolled biometric fingerprints, IDs, and validity periods. | Lock entity / device |
+| `hass_ttlock_ble.set_passage_mode` | Configure one or more passage mode intervals on the lock. Supports `slots` (list of schedules), `start_time`, `end_time`, `days` (or `everyday`), `all_day`, and `clear_existing`. | Lock entity / device |
+| `hass_ttlock_ble.get_passage_mode` | Read all configured passage mode schedule intervals directly from lock memory over Bluetooth. | Lock entity / device |
+| `hass_ttlock_ble.delete_passage_mode` | Delete a specific passage mode interval by start time, end time, and day. | Lock entity / device |
+| `hass_ttlock_ble.clear_passage_mode` | Remove all configured passage mode schedule intervals from the lock. | Lock entity / device |
+| `hass_ttlock_ble.get_auto_lock_time` | Query current auto-lock duration in seconds and the lock hardware's supported min/max limits. | Lock entity / device |
+| `hass_ttlock_ble.get_lock_time` | Query the lock's internal real-time hardware clock and compute current drift relative to Home Assistant local time. | Lock entity / device |
+| `hass_ttlock_ble.get_operation_log` | Fetch recent operation-log records from the lock's on-chip memory. Supports `max_entries`, `from_sequence`, `to_sequence`, `start_date`, and `end_date`. | Lock entity / device |
+| `hass_ttlock_ble.get_passcodes` | Query all programmed keyboard passcodes (PINs), passcode types, and validity periods. | Lock entity / device |
+| `hass_ttlock_ble.get_cards` | Query all enrolled RFID / IC cards, card numbers, and validity periods. | Lock entity / device |
+| `hass_ttlock_ble.get_fingerprints` | Query all enrolled biometric fingerprints, IDs, and validity periods. | Lock entity / device |
 
 ### Example: Setting Passage Mode Schedule
 
 ```yaml
-action: ttlock_ble.set_passage_mode
+action: hass_ttlock_ble.set_passage_mode
 target:
   entity_id: lock.front_door
 data:
@@ -158,7 +158,7 @@ scripts/develop    # start Home Assistant in debug mode with the integration loa
 # Lint and test directly (config lives in pyproject.toml):
 uv run ruff format --check .
 uv run ruff check .
-uv run mypy custom_components/ttlock_ble
+uv run mypy custom_components/hass_ttlock_ble
 uv run pytest
 ```
 
@@ -171,7 +171,7 @@ rm config/.storage/core.entity_registry config/.storage/core.device_registry
 ## Layout
 
 ```
-custom_components/ttlock_ble/
+custom_components/hass_ttlock_ble/
 ├── __init__.py        # config-entry lifecycle & service registrations
 ├── advertisement.py   # TtlockBleAdvertisementTracker: state from advertisements
 ├── api.py             # TtlockBleApiClient: TTLockCloud wrapper (cloud bootstrap only)

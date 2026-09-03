@@ -2,7 +2,7 @@
 
 Style conventions for the `hass-ttlock-ble` project. Before committing, run
 `uv run ruff format --check .`, `uv run ruff check .` and
-`uv run mypy custom_components/ttlock_ble`; they must exit cleanly.
+`uv run mypy custom_components/hass_ttlock_ble`; they must exit cleanly.
 `uv run pytest` (with its coverage gate) follows.
 
 **Always read this file before adding or restructuring code.**
@@ -13,7 +13,7 @@ Style conventions for the `hass-ttlock-ble` project. Before committing, run
   variable names, dictionary keys, identifier strings.
 - The conversation language with the user can be Portuguese or anything else;
   what is committed to disk stays English.
-- User-facing strings live in `custom_components/ttlock_ble/translations/{en,pt-BR}.json`
+- User-facing strings live in `custom_components/hass_ttlock_ble/translations/{en,pt-BR}.json`
   only — never hardcoded in Python.
 
 ## File organization
@@ -68,7 +68,7 @@ should be written:
 
 ## Typing
 
-**Strict typing. No generics, no `Any`.** `uv run mypy custom_components/ttlock_ble` enforces this.
+**Strict typing. No generics, no `Any`.** `uv run mypy custom_components/hass_ttlock_ble` enforces this.
 
 Banned: `typing.Any`, `object` as a value type, bare `dict` / `list` / `tuple` /
 `set`, `dict[str, Any]`, `Mapping[str, Any]`.
@@ -226,7 +226,7 @@ pre-commit install
 The hooks run the same gates as CI on every commit. Skip them only on
 emergency `git commit --no-verify` and immediately re-run
 `uv run ruff format --check .`, `uv run ruff check .` and
-`uv run mypy custom_components/ttlock_ble`.
+`uv run mypy custom_components/hass_ttlock_ble`.
 
 ## Conventional commits
 
@@ -254,7 +254,7 @@ which `release-please` parses to bump the version and generate `CHANGELOG.md`:
 - Ruff configuration lives in `pyproject.toml` with `select = ["ALL"]`.
 - Mypy configuration also lives in `pyproject.toml`. Run them directly:
   `uv run ruff format --check .`, `uv run ruff check .` and
-  `uv run mypy custom_components/ttlock_ble`.
+  `uv run mypy custom_components/hass_ttlock_ble`.
 - After every change run the lint commands above and `uv run pytest`. Both
   gates mirror CI (`.github/workflows/ci.yml`).
 - Tests live in `tests/`, mirroring the production layout. `uv run pytest`

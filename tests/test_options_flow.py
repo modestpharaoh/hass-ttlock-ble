@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from homeassistant.data_entry_flow import FlowResultType
 
-from custom_components.ttlock_ble.const import CONF_PERMANENT_CONNECTION
+from custom_components.hass_ttlock_ble.const import CONF_PERMANENT_CONNECTION
 
 
 def _schema_default(result, key):

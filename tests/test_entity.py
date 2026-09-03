@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, format_mac
 
-from custom_components.ttlock_ble.clock_sync_store import TtlockBleClockSyncStore
-from custom_components.ttlock_ble.const import DOMAIN, MANUFACTURER
-from custom_components.ttlock_ble.coordinator import TtlockBleDataUpdateCoordinator
-from custom_components.ttlock_ble.device_description_store import (
+from custom_components.hass_ttlock_ble.clock_sync_store import TtlockBleClockSyncStore
+from custom_components.hass_ttlock_ble.const import DOMAIN, MANUFACTURER
+from custom_components.hass_ttlock_ble.coordinator import TtlockBleDataUpdateCoordinator
+from custom_components.hass_ttlock_ble.device_description_store import (
     TtlockBleDeviceDescriptionStore,
 )
-from custom_components.ttlock_ble.entity import TtlockBleEntity
+from custom_components.hass_ttlock_ble.entity import TtlockBleEntity
 
 
 def _entity(hass, key, description=None) -> TtlockBleEntity:

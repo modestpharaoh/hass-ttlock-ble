@@ -9,7 +9,7 @@ from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.ttlock_ble.const import DOMAIN
+from custom_components.hass_ttlock_ble.const import DOMAIN
 
 MAC = "AA:BB:CC:DD:EE:FF"
 AES_KEY_HEX = "0123456789abcdef0123456789abcdef"
@@ -36,14 +36,14 @@ def _lock_out_of_range():
     are not testing.
     """
     with patch(
-        "custom_components.ttlock_ble.manual_key.async_last_service_info",
+        "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
         return_value=None,
     ):
         yield
 
 
 def _manual_key(hass):
-    from custom_components.ttlock_ble.manual_key import TtlockBleManualKey
+    from custom_components.hass_ttlock_ble.manual_key import TtlockBleManualKey
 
     return TtlockBleManualKey(hass)
 
@@ -117,7 +117,7 @@ class TestValidation:
 class TestAdvertisementCrossCheck:
     async def test_matching_advertisement_passes(self, hass) -> None:
         with patch(
-            "custom_components.ttlock_ble.manual_key.async_last_service_info",
+            "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
             return_value=_advertisement_service_info(scene=2),
         ):
             assert _manual_key(hass).async_validate(dict(MANUAL_INPUT)) == {}
@@ -125,7 +125,7 @@ class TestAdvertisementCrossCheck:
     async def test_disagreeing_advertisement_is_rejected(self, hass) -> None:
         """The lock broadcasts its own frame header, so a wrong scene is catchable."""
         with patch(
-            "custom_components.ttlock_ble.manual_key.async_last_service_info",
+            "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
             return_value=_advertisement_service_info(scene=4),
         ):
             errors = _manual_key(hass).async_validate(dict(MANUAL_INPUT))
@@ -133,7 +133,7 @@ class TestAdvertisementCrossCheck:
 
     async def test_out_of_range_lock_is_not_an_error(self, hass) -> None:
         with patch(
-            "custom_components.ttlock_ble.manual_key.async_last_service_info",
+            "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
             return_value=None,
         ):
             assert _manual_key(hass).async_validate(dict(MANUAL_INPUT)) == {}
@@ -149,7 +149,7 @@ class TestAdvertisementCrossCheck:
     ) -> None:
         """The lookup is exact, so the MAC has to be normalised before it."""
         with patch(
-            "custom_components.ttlock_ble.manual_key.async_last_service_info",
+            "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
             return_value=_advertisement_service_info(scene=4),
         ) as lookup:
             errors = _manual_key(hass).async_validate(
@@ -162,7 +162,7 @@ class TestAdvertisementCrossCheck:
         info = MagicMock()
         info.manufacturer_data = {0x004C: b"\x02\x15"}
         with patch(
-            "custom_components.ttlock_ble.manual_key.async_last_service_info",
+            "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
             return_value=info,
         ):
             assert _manual_key(hass).async_validate(dict(MANUAL_INPUT)) == {}
@@ -189,7 +189,7 @@ class TestBuild:
         assert key.aesKeyStr == AES_KEY_HEX
 
     async def test_stored_key_round_trips_through_the_form(self, hass) -> None:
-        from custom_components.ttlock_ble.manual_key import TtlockBleManualKey
+        from custom_components.hass_ttlock_ble.manual_key import TtlockBleManualKey
 
         key = _manual_key(hass).build(dict(MANUAL_INPUT))
         defaults = TtlockBleManualKey.defaults_from(key.to_dict())
@@ -228,7 +228,7 @@ class TestConfigFlow:
     ) -> None:
         flow = await _start_manual_flow(hass)
         with patch(
-            "custom_components.ttlock_ble.manual_key.async_last_service_info",
+            "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
             return_value=None,
         ):
             result = await hass.config_entries.flow.async_configure(
@@ -260,7 +260,7 @@ class TestConfigFlow:
     ) -> None:
         flow = await _start_manual_flow(hass)
         with patch(
-            "custom_components.ttlock_ble.manual_key.async_last_service_info",
+            "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
             return_value=None,
         ):
             await hass.config_entries.flow.async_configure(
@@ -281,7 +281,7 @@ class TestConfigFlow:
         ).add_to_hass(hass)
         flow = await _start_manual_flow(hass)
         with patch(
-            "custom_components.ttlock_ble.manual_key.async_last_service_info",
+            "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
             return_value=None,
         ):
             result = await hass.config_entries.flow.async_configure(
@@ -325,7 +325,7 @@ class TestReconfigure:
         entry.add_to_hass(hass)
         flow = await entry.start_reconfigure_flow(hass)
         with patch(
-            "custom_components.ttlock_ble.manual_key.async_last_service_info",
+            "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
             return_value=None,
         ):
             result = await hass.config_entries.flow.async_configure(
@@ -353,7 +353,7 @@ class TestReconfigure:
         corrected = "AA:BB:CC:DD:EE:FF"
         flow = await entry.start_reconfigure_flow(hass)
         with patch(
-            "custom_components.ttlock_ble.manual_key.async_last_service_info",
+            "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
             return_value=None,
         ):
             result = await hass.config_entries.flow.async_configure(
@@ -388,7 +388,7 @@ class TestReconfigure:
         ).add_to_hass(hass)
         flow = await entry.start_reconfigure_flow(hass)
         with patch(
-            "custom_components.ttlock_ble.manual_key.async_last_service_info",
+            "custom_components.hass_ttlock_ble.manual_key.async_last_service_info",
             return_value=None,
         ):
             result = await hass.config_entries.flow.async_configure(

@@ -11,7 +11,7 @@
       "extra-files": [
         {
           "type": "json",
-          "path": "custom_components/ttlock_ble/manifest.json",
+          "path": "custom_components/hass_ttlock_ble/manifest.json",
           "jsonpath": "$.version"
         },
         {

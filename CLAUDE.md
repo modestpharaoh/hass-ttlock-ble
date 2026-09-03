@@ -18,10 +18,10 @@ This file deliberately avoids restating those rules — it only adds:
 **After every code change, always run lint then tests, in that order, before declaring the task done:**
 
 ```bash
-uv run ruff format --check . && uv run ruff check . && uv run mypy custom_components/ttlock_ble && uv run pytest
+uv run ruff format --check . && uv run ruff check . && uv run mypy custom_components/hass_ttlock_ble && uv run pytest
 ```
 
-- `ruff format --check .`, `ruff check .` and `mypy custom_components/ttlock_ble` enforce formatting, linting and strict typing. Fix any failure and re-run before moving on.
+- `ruff format --check .`, `ruff check .` and `mypy custom_components/hass_ttlock_ble` enforce formatting, linting and strict typing. Fix any failure and re-run before moving on.
 - `pytest` runs with the `--cov` flags (configured in `pyproject.toml`) and enforces the coverage gate. Both ruff and mypy configuration also live in `pyproject.toml`.
 
 Both gates mirror CI (`.github/workflows/ci.yml`). Skip this only when the change literally cannot affect lint or tests (e.g., README-only edits).
@@ -39,7 +39,7 @@ Verify the pairing on PyPI before committing: the `requires_dist` of `pytest-hom
 
 This integration wraps the sibling repo [`ttlock-ble`](https://github.com/roquerodrigo/ttlock-ble), which owns all BLE protocol/crypto logic and the cloud login client. The pin lives in **two places that can drift**:
 
-- `custom_components/ttlock_ble/manifest.json` → `requirements: ["ttlock-ble==<version>"]` — this is what HACS/HA actually installs for end users.
+- `custom_components/hass_ttlock_ble/manifest.json` → `requirements: ["ttlock-ble==<version>"]` — this is what HACS/HA actually installs for end users.
 - `pyproject.toml` → `dependency-groups.dev` → `"ttlock-ble==<version>"` — this is what lint/mypy/pytest run against locally and in CI.
 
 If these two pins diverge, CI is green against a different SDK version than what ships to users. A breaking change in the SDK's public API (`TTLockCloud`, `TTLockClient`, `VirtualKey`, `CloudError`, the `disconnected_callback` signature) requires bumping both pins together, then re-running lint + tests here — the SDK repo's own release does not by itself update anything on this side.
@@ -74,7 +74,7 @@ button.py        → Action buttons for clock calibration, log sync, state refre
                     passcodes/cards/fingerprints count sync, and passage mode sync
 passage.py       → BLE packet encoders/parsers for passage mode schedules
 credentials.py   → BLE packet query handlers for passcodes, cards, and fingerprints
-services.py      → custom Home Assistant actions under ttlock_ble domain
+services.py      → custom Home Assistant actions under hass_ttlock_ble domain
 record_store.py  → persists the operation-log cursor per lock, so a
                     restart resumes instead of re-seeding
 device_description_store.py

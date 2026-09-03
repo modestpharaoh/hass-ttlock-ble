@@ -7,13 +7,13 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from custom_components.ttlock_ble.binary_sensor import (
+from custom_components.hass_ttlock_ble.binary_sensor import (
     TtlockBlePassageModeActiveBinarySensor,
     get_next_passage_mode_transition,
     is_passage_mode_active,
 )
-from custom_components.ttlock_ble.button import TtlockBleSyncPassageModeButton
-from custom_components.ttlock_ble.sensor import (
+from custom_components.hass_ttlock_ble.button import TtlockBleSyncPassageModeButton
+from custom_components.hass_ttlock_ble.sensor import (
     TtlockBlePassageModeScheduleSensor,
     format_passage_mode_status,
     get_passage_schedule_attributes,

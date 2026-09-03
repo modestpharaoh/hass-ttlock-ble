@@ -15,7 +15,7 @@ Pull requests are the best way to propose changes to the codebase.
 
 1. Fork the repo and create your branch from `main`.
 2. If you've changed something, update the documentation.
-3. Make sure your code lints (`uv run ruff format --check .`, `uv run ruff check .`, `uv run mypy custom_components/ttlock_ble`).
+3. Make sure your code lints (`uv run ruff format --check .`, `uv run ruff check .`, `uv run mypy custom_components/hass_ttlock_ble`).
 4. Test your contribution.
 5. Issue that pull request!
 

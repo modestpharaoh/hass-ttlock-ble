@@ -6,8 +6,8 @@ import httpx
 import pytest
 from ttlock_ble import CloudError
 
-from custom_components.ttlock_ble.api import TtlockBleApiClient
-from custom_components.ttlock_ble.exceptions import (
+from custom_components.hass_ttlock_ble.api import TtlockBleApiClient
+from custom_components.hass_ttlock_ble.exceptions import (
     TtlockBleApiClientAuthenticationError,
     TtlockBleApiClientCommunicationError,
     TtlockBleApiClientError,

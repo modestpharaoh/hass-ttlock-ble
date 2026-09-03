@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from custom_components.ttlock_ble.connection import connection_signal
+from custom_components.hass_ttlock_ble.connection import connection_signal
 
 
 async def test_connection_binary_sensor_created_for_each_key(

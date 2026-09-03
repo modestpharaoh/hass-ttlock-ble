@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from homeassistant.exceptions import HomeAssistantError
 
-from custom_components.ttlock_ble.button import (
+from custom_components.hass_ttlock_ble.button import (
     TtlockBleRefreshStateButton,
     TtlockBleSyncClockButton,
     TtlockBleSyncLogButton,

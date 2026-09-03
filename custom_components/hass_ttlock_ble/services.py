@@ -271,7 +271,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         return
 
     async def async_handle_get_passage_mode(call: ServiceCall) -> ServiceResponse:
-        """Handle ttlock_ble.get_passage_mode."""
+        """Handle hass_ttlock_ble.get_passage_mode."""
         connections = _async_resolve_connections(hass, call)
         results: list[dict[str, object]] = []
         for conn in connections:
@@ -301,7 +301,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         return {"schedules": results}
 
     async def async_handle_set_passage_mode(call: ServiceCall) -> None:
-        """Handle ttlock_ble.set_passage_mode."""
+        """Handle hass_ttlock_ble.set_passage_mode."""
         connections = _async_resolve_connections(hass, call)
         schedules = _parse_schedules_from_call(call.data)
         clear_existing = bool(call.data.get("clear_existing", False))
@@ -317,7 +317,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 ) from exc
 
     async def async_handle_delete_passage_mode(call: ServiceCall) -> None:
-        """Handle ttlock_ble.delete_passage_mode."""
+        """Handle hass_ttlock_ble.delete_passage_mode."""
         connections = _async_resolve_connections(hass, call)
         slots = _parse_schedules_from_call(call.data)
         for conn in connections:
@@ -330,7 +330,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     ) from exc
 
     async def async_handle_clear_passage_mode(call: ServiceCall) -> None:
-        """Handle ttlock_ble.clear_passage_mode."""
+        """Handle hass_ttlock_ble.clear_passage_mode."""
         connections = _async_resolve_connections(hass, call)
         for conn in connections:
             try:
@@ -341,7 +341,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 ) from exc
 
     async def async_handle_get_auto_lock_time(call: ServiceCall) -> ServiceResponse:
-        """Handle ttlock_ble.get_auto_lock_time."""
+        """Handle hass_ttlock_ble.get_auto_lock_time."""
         connections = _async_resolve_connections(hass, call)
         results: list[dict[str, object]] = []
         for conn in connections:
@@ -355,7 +355,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         return {"auto_lock": results}
 
     async def async_handle_get_lock_time(call: ServiceCall) -> ServiceResponse:
-        """Handle ttlock_ble.get_lock_time."""
+        """Handle hass_ttlock_ble.get_lock_time."""
         connections = _async_resolve_connections(hass, call)
         results: list[dict[str, object]] = []
         for conn in connections:
@@ -369,7 +369,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         return {"lock_times": results}
 
     async def async_handle_get_operation_log(call: ServiceCall) -> ServiceResponse:
-        """Handle ttlock_ble.get_operation_log."""
+        """Handle hass_ttlock_ble.get_operation_log."""
         connections = _async_resolve_connections(hass, call)
         max_entries = int(call.data.get("max_entries", 50))
         from_sequence = call.data.get("from_sequence")
@@ -397,7 +397,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         return {"records": results}
 
     async def async_handle_get_passcodes(call: ServiceCall) -> ServiceResponse:
-        """Handle ttlock_ble.get_passcodes."""
+        """Handle hass_ttlock_ble.get_passcodes."""
         connections = _async_resolve_connections(hass, call)
         results: list[dict[str, object]] = []
         for conn in connections:
@@ -412,7 +412,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         return {"passcodes": results}
 
     async def async_handle_get_cards(call: ServiceCall) -> ServiceResponse:
-        """Handle ttlock_ble.get_cards."""
+        """Handle hass_ttlock_ble.get_cards."""
         connections = _async_resolve_connections(hass, call)
         results: list[dict[str, object]] = []
         for conn in connections:
@@ -427,7 +427,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         return {"cards": results}
 
     async def async_handle_get_fingerprints(call: ServiceCall) -> ServiceResponse:
-        """Handle ttlock_ble.get_fingerprints."""
+        """Handle hass_ttlock_ble.get_fingerprints."""
         connections = _async_resolve_connections(hass, call)
         results: list[dict[str, object]] = []
         for conn in connections:

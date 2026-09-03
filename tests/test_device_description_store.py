@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from custom_components.ttlock_ble.device_description_store import (
+from custom_components.hass_ttlock_ble.device_description_store import (
     STORAGE_KEY,
     STORAGE_VERSION,
     TtlockBleDeviceDescriptionStore,
@@ -57,7 +57,7 @@ async def test_locks_keep_separate_descriptions(hass) -> None:
 
 async def test_every_entry_shares_one_store(hass) -> None:
     """Two instances over one storage key take turns dropping each other's writes."""
-    from custom_components.ttlock_ble.device_description_store import (
+    from custom_components.hass_ttlock_ble.device_description_store import (
         async_get_device_description_store,
     )
 

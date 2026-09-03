@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from custom_components.ttlock_ble.diagnostics import (
+from custom_components.hass_ttlock_ble.diagnostics import (
     async_get_config_entry_diagnostics,
 )
 
@@ -22,7 +22,7 @@ async def test_diagnostics_redacts_keys(hass, setup_integration) -> None:
 
 async def test_diagnostics_includes_entry_metadata(hass, setup_integration) -> None:
     diag = await async_get_config_entry_diagnostics(hass, setup_integration)
-    assert diag["entry"]["domain"] == "ttlock_ble"
+    assert diag["entry"]["domain"] == "hass_ttlock_ble"
     assert diag["entry"]["version"] == 1
     # A cloud entry is titled with the account name — redacted like the rest.
     assert diag["entry"]["title"] == "**REDACTED**"
@@ -39,7 +39,7 @@ async def test_diagnostics_keeps_the_title_of_a_manual_entry(
     """A manual entry is titled with the lock alias, which is not sensitive."""
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -95,7 +95,7 @@ async def test_diagnostics_reports_no_advertisement_when_unseen(
     setup_integration,
     sample_virtual_key,
 ) -> None:
-    from custom_components.ttlock_ble.diagnostics import (
+    from custom_components.hass_ttlock_ble.diagnostics import (
         async_get_config_entry_diagnostics,
     )
 
@@ -111,7 +111,7 @@ async def test_diagnostics_carries_the_raw_advertisement_bytes(
     """The dump keeps the raw payload so an undecodable layout stays diagnosable."""
     from unittest.mock import MagicMock, patch
 
-    from custom_components.ttlock_ble.diagnostics import (
+    from custom_components.hass_ttlock_ble.diagnostics import (
         async_get_config_entry_diagnostics,
     )
 
@@ -121,7 +121,7 @@ async def test_diagnostics_carries_the_raw_advertisement_bytes(
     service_info.rssi = -61
     service_info.manufacturer_data = {0x0305: payload}
     with patch(
-        "custom_components.ttlock_ble.diagnostics.async_last_service_info",
+        "custom_components.hass_ttlock_ble.diagnostics.async_last_service_info",
         return_value=service_info,
     ):
         diagnostics = await async_get_config_entry_diagnostics(hass, setup_integration)
@@ -140,7 +140,7 @@ async def test_diagnostics_decoded_is_none_for_a_foreign_payload(
 ) -> None:
     from unittest.mock import MagicMock, patch
 
-    from custom_components.ttlock_ble.diagnostics import (
+    from custom_components.hass_ttlock_ble.diagnostics import (
         async_get_config_entry_diagnostics,
     )
 
@@ -149,7 +149,7 @@ async def test_diagnostics_decoded_is_none_for_a_foreign_payload(
     service_info.rssi = -80
     service_info.manufacturer_data = {0x004C: b"\x02\x15"}
     with patch(
-        "custom_components.ttlock_ble.diagnostics.async_last_service_info",
+        "custom_components.hass_ttlock_ble.diagnostics.async_last_service_info",
         return_value=service_info,
     ):
         diagnostics = await async_get_config_entry_diagnostics(hass, setup_integration)
@@ -162,7 +162,7 @@ async def test_diagnostics_reports_no_description_before_a_lock_is_read(
     setup_integration,
     sample_virtual_key,
 ) -> None:
-    from custom_components.ttlock_ble.diagnostics import (
+    from custom_components.hass_ttlock_ble.diagnostics import (
         async_get_config_entry_diagnostics,
     )
 
@@ -176,7 +176,7 @@ async def test_diagnostics_carries_the_hardware_strings(
     sample_virtual_key,
 ) -> None:
     """Model and firmware are the first thing a bug report is asked for."""
-    from custom_components.ttlock_ble.diagnostics import (
+    from custom_components.hass_ttlock_ble.diagnostics import (
         async_get_config_entry_diagnostics,
     )
 

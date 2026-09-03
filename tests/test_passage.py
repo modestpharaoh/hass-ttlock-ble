@@ -9,8 +9,8 @@ from ttlock_ble import TTLockError
 from ttlock_ble.constants import ResponseStatus
 from ttlock_ble.protocol import Frame
 
-from custom_components.ttlock_ble.data import TtlockBlePassageSchedule
-from custom_components.ttlock_ble.passage import (
+from custom_components.hass_ttlock_ble.data import TtlockBlePassageSchedule
+from custom_components.hass_ttlock_ble.passage import (
     CMD_CONFIGURE_PASSAGE_MODE,
     PASSAGE_MODE_ADD,
     PASSAGE_MODE_CLEAR,
@@ -28,7 +28,7 @@ from custom_components.ttlock_ble.passage import (
     build_passage_set_payload,
     parse_passage_query_response,
 )
-from custom_components.ttlock_ble.services import (
+from custom_components.hass_ttlock_ble.services import (
     _parse_days,
     _parse_schedules_from_call,
     _parse_single_slot,

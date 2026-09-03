@@ -1,6 +1,6 @@
 {
-  "domain": "ttlock_ble",
-  "name": "TTLock BLE",
+  "domain": "hass_ttlock_ble",
+  "name": "TTLock BLE (Custom)",
   "bluetooth": [
     {
       "connectable": false,

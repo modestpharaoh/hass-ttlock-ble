@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 TRANSLATIONS_DIR = (
-    Path(__file__).parent.parent / "custom_components" / "ttlock_ble" / "translations"
+    Path(__file__).parent.parent / "custom_components" / "hass_ttlock_ble" / "translations"
 )
 
 
@@ -82,7 +82,7 @@ async def test_entity_translation_keys_and_authored_names_agree(
     requested = {
         (entry.domain, entry.translation_key)
         for entry in registry.entities.values()
-        if entry.platform == "ttlock_ble" and entry.translation_key is not None
+        if entry.platform == "hass_ttlock_ble" and entry.translation_key is not None
     }
     assert requested, "the integration registered no translated entity"
     authored = _authored_entity_keys()

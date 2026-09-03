@@ -1,11 +1,11 @@
 """
-Persistent BLE connection wrapper for ttlock_ble.
+Persistent BLE connection wrapper for hass_ttlock_ble.
 
 Each `TtlockBleConnection` owns a long-lived `TTLockClient` for a single
 `VirtualKey`, runs a background reconnect loop, and serializes state
 queries and lock commands through a single `asyncio.Lock`. Push events
 arriving on that connection are dispatched live via HA's dispatcher
-under the signal `ttlock_ble_event_<mac>`.
+under the signal `hass_ttlock_ble_event_<mac>`.
 
 The reconnect loop waits on an `asyncio.Event` that the SDK's
 `disconnected_callback` toggles, so the watchdog wakes up the instant
@@ -210,7 +210,7 @@ class TtlockBleConnection:
         self._closing = False
         self._task = self._hass.async_create_background_task(
             self._async_maintain(),
-            name=f"ttlock_ble.connection.{self._key.lockMac}",
+            name=f"hass_ttlock_ble.connection.{self._key.lockMac}",
         )
 
     async def async_stop(self) -> None:

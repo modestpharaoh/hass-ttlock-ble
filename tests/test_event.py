@@ -6,8 +6,8 @@ import pytest
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from ttlock_ble import LogEntry, LogOperate
 
-from custom_components.ttlock_ble.connection import log_signal
-from custom_components.ttlock_ble.event import _classify_record, _record_type_name
+from custom_components.hass_ttlock_ble.connection import log_signal
+from custom_components.hass_ttlock_ble.event import _classify_record, _record_type_name
 
 
 def _log_state(hass):
@@ -96,7 +96,7 @@ async def test_log_event_redacts_every_passcode_record_type(
     sample_virtual_key,
 ) -> None:
     """No record type that carries a working door code may publish it."""
-    from custom_components.ttlock_ble.event import PASSCODE_RECORD_TYPES
+    from custom_components.hass_ttlock_ble.event import PASSCODE_RECORD_TYPES
 
     for index, record_type in enumerate(sorted(PASSCODE_RECORD_TYPES)):
         entry = LogEntry(
@@ -162,7 +162,7 @@ def test_every_record_type_is_deliberately_classified() -> None:
     """
     from ttlock_ble import LogOperate
 
-    from custom_components.ttlock_ble.event import (
+    from custom_components.hass_ttlock_ble.event import (
         LOCK_RECORD_TYPES,
         PASSWORD_CHANGE_RECORD_TYPES,
         UNBUCKETED_RECORD_TYPES,
@@ -182,7 +182,7 @@ def test_every_record_type_is_deliberately_classified() -> None:
 
 def test_the_buckets_do_not_overlap() -> None:
     """A record type means one thing; two buckets would make order decide."""
-    from custom_components.ttlock_ble.event import (
+    from custom_components.hass_ttlock_ble.event import (
         LOCK_RECORD_TYPES,
         PASSWORD_CHANGE_RECORD_TYPES,
         UNBUCKETED_RECORD_TYPES,
@@ -206,7 +206,7 @@ def test_a_passcode_carrying_record_never_leaks_its_code() -> None:
     """Newly classified types must not have widened what reaches an attribute."""
     from ttlock_ble import LogOperate
 
-    from custom_components.ttlock_ble.event import (
+    from custom_components.hass_ttlock_ble.event import (
         PASSCODE_RECORD_TYPES,
         UNLOCK_RECORD_TYPES,
     )

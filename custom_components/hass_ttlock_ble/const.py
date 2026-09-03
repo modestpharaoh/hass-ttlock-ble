@@ -1,4 +1,4 @@
-"""Constants for ttlock_ble."""
+"""Constants for hass_ttlock_ble."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from logging import Logger, getLogger
 
 LOGGER: Logger = getLogger(__package__)
 
-DOMAIN = "ttlock_ble"
+DOMAIN = "hass_ttlock_ble"
 MANUFACTURER = "TTLock"
 ATTRIBUTION = "Data provided by the TTLock cloud and on-lock BLE"
 

@@ -26,7 +26,7 @@ def test_manifest_and_dev_group_pin_the_same_sdk_version() -> None:
     integration never sees.
     """
     manifest = json.loads(
-        (_ROOT / "custom_components" / "ttlock_ble" / "manifest.json").read_text(),
+        (_ROOT / "custom_components" / "hass_ttlock_ble" / "manifest.json").read_text(),
     )
     pyproject = tomllib.loads((_ROOT / "pyproject.toml").read_text())
 

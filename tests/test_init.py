@@ -26,7 +26,7 @@ async def test_reload_entry_restores_loaded_state(hass, setup_integration) -> No
 
 
 async def test_async_reload_entry_calls_reload(hass, setup_integration) -> None:
-    from custom_components.ttlock_ble import async_reload_entry
+    from custom_components.hass_ttlock_ble import async_reload_entry
 
     await async_reload_entry(hass, setup_integration)
     await hass.async_block_till_done()
@@ -66,7 +66,7 @@ async def test_an_undecodable_advertisement_reads_the_unknown_position(
 
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     captured_callbacks: list = []
 
@@ -75,7 +75,7 @@ async def test_an_undecodable_advertisement_reads_the_unknown_position(
         return MagicMock()
 
     with patch(
-        "custom_components.ttlock_ble.advertisement.async_register_callback",
+        "custom_components.hass_ttlock_ble.advertisement.async_register_callback",
         side_effect=_capture,
     ):
         entry = MockConfigEntry(
@@ -109,11 +109,11 @@ async def test_unload_invokes_bluetooth_unsubs(
 
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     fake_unsub = MagicMock()
     with patch(
-        "custom_components.ttlock_ble.advertisement.async_register_callback",
+        "custom_components.hass_ttlock_ble.advertisement.async_register_callback",
         return_value=fake_unsub,
     ):
         entry = MockConfigEntry(
@@ -159,7 +159,7 @@ async def test_permanent_connection_starts_the_session(
     """The option is what asks for a session to be held open."""
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.ttlock_ble.const import CONF_PERMANENT_CONNECTION, DOMAIN
+    from custom_components.hass_ttlock_ble.const import CONF_PERMANENT_CONNECTION, DOMAIN
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -185,7 +185,7 @@ async def test_setup_prunes_devices_for_removed_locks(
     from homeassistant.helpers import device_registry
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -216,8 +216,8 @@ async def test_remove_config_entry_device_denies_a_configured_lock(
     """The lock is still in the entry's keys, so the device must stay."""
     from homeassistant.helpers import device_registry
 
-    from custom_components.ttlock_ble import async_remove_config_entry_device
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble import async_remove_config_entry_device
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     registry = device_registry.async_get(hass)
     device = registry.async_get_device(identifiers={(DOMAIN, "aa:bb:cc:dd:ee:ff")})
@@ -231,8 +231,8 @@ async def test_remove_config_entry_device_allows_a_stale_lock(
     """A device with no lock in the entry's keys can be deleted from the UI."""
     from homeassistant.helpers import device_registry
 
-    from custom_components.ttlock_ble import async_remove_config_entry_device
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble import async_remove_config_entry_device
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     registry = device_registry.async_get(hass)
     device = registry.async_get_or_create(
@@ -258,7 +258,7 @@ async def test_reauth_key_refresh_prunes_the_replaced_lock(
     from homeassistant.helpers import device_registry
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -314,7 +314,7 @@ async def test_failed_platform_setup_still_stops_the_connections(
 
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     entry = MockConfigEntry(
         domain=DOMAIN,

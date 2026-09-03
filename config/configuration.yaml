@@ -6,4 +6,4 @@ homeassistant:
 logger:
   default: info
   logs:
-    custom_components.ttlock_ble: debug
+    custom_components.hass_ttlock_ble: debug

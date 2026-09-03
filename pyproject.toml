@@ -35,14 +35,14 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = [
-    "--cov=custom_components/ttlock_ble",
+    "--cov=custom_components/hass_ttlock_ble",
     "--cov-report=term-missing",
     "--cov-fail-under=90",
 ]
 
 [tool.mypy]
 python_version = "3.14"
-files = ["custom_components/ttlock_ble"]
+files = ["custom_components/hass_ttlock_ble"]
 explicit_package_bases = true
 ignore_missing_imports = true
 follow_imports = "silent"

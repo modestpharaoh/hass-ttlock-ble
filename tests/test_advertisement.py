@@ -26,7 +26,7 @@ def service_info(data: dict) -> MagicMock:
 
 @pytest.fixture
 def tracker(hass):
-    from custom_components.ttlock_ble.advertisement import (
+    from custom_components.hass_ttlock_ble.advertisement import (
         TtlockBleAdvertisementTracker,
     )
 
@@ -37,12 +37,12 @@ def tracker(hass):
 
 
 async def test_register_subscribes_once_per_lock(hass, sample_virtual_key) -> None:
-    from custom_components.ttlock_ble.advertisement import (
+    from custom_components.hass_ttlock_ble.advertisement import (
         TtlockBleAdvertisementTracker,
     )
 
     with patch(
-        "custom_components.ttlock_ble.advertisement.async_register_callback",
+        "custom_components.hass_ttlock_ble.advertisement.async_register_callback",
         return_value=MagicMock(),
     ) as register:
         unsubs = TtlockBleAdvertisementTracker(hass, MagicMock()).async_register(

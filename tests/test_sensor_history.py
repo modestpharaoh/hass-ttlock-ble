@@ -9,7 +9,7 @@ import pytest
 from ttlock_ble import LogEntry
 from ttlock_ble.constants import LogOperate
 
-from custom_components.ttlock_ble.sensor import (
+from custom_components.hass_ttlock_ble.sensor import (
     TtlockBleCredentialsCountSensor,
     TtlockBleLastUnlockMethodSensor,
     format_unlock_method,

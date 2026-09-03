@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from custom_components.ttlock_ble.credentials import (
+from custom_components.hass_ttlock_ble.credentials import (
     CMD_FR_MANAGE,
     CMD_IC_MANAGE,
     CMD_PWD_LIST,

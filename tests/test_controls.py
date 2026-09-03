@@ -7,8 +7,8 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from homeassistant.exceptions import HomeAssistantError
 
-from custom_components.ttlock_ble.number import TtlockBleAutoLockTimeNumber
-from custom_components.ttlock_ble.switch import (
+from custom_components.hass_ttlock_ble.number import TtlockBleAutoLockTimeNumber
+from custom_components.hass_ttlock_ble.switch import (
     TtlockBleAutoLockSwitch,
     TtlockBlePassageModeSwitch,
 )

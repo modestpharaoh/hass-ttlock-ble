@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from custom_components.ttlock_ble.record_store import (
+from custom_components.hass_ttlock_ble.record_store import (
     MAX_RECORDS_PER_LOCK,
     STORAGE_KEY,
     STORAGE_VERSION,
@@ -84,7 +84,7 @@ async def test_an_empty_backlog_still_marks_the_lock_seeded(hass, hass_storage) 
 
 async def test_every_entry_shares_one_store(hass) -> None:
     """Two instances over one storage key take turns dropping each other's writes."""
-    from custom_components.ttlock_ble.record_store import async_get_record_store
+    from custom_components.hass_ttlock_ble.record_store import async_get_record_store
 
     first = await async_get_record_store(hass)
     first.async_remember(MAC, {1, 2})

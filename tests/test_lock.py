@@ -28,7 +28,7 @@ async def test_lock_state_unlocked(
 ) -> None:
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     from .conftest import lock_advertisement
 
@@ -168,7 +168,7 @@ async def test_async_lock_sets_optimistic_state(
     from homeassistant.components.lock import SERVICE_LOCK
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.ttlock_ble.const import DOMAIN
+    from custom_components.hass_ttlock_ble.const import DOMAIN
 
     from .conftest import lock_advertisement
 
@@ -216,14 +216,14 @@ async def test_settle_window_suppresses_blink(
     from homeassistant.helpers.dispatcher import async_dispatcher_send
     from ttlock_ble import LockEvent
 
-    from custom_components.ttlock_ble.connection import event_signal
+    from custom_components.hass_ttlock_ble.connection import event_signal
 
     # The mock returns "locked" — simulates the lock's BLE state lagging the
     # mechanical unlock. With settle active, this must NOT bounce the UI.
     mock_ttlock_connection.async_query_state = AsyncMock(return_value=(0, 80))
     state = hass.states.async_all("lock")[0]
     assert state.state == "locked"
-    with patch("custom_components.ttlock_ble.lock.COMMAND_SETTLE_SECONDS", 60.0):
+    with patch("custom_components.hass_ttlock_ble.lock.COMMAND_SETTLE_SECONDS", 60.0):
         await hass.services.async_call(
             LOCK_DOMAIN,
             SERVICE_UNLOCK,
@@ -251,7 +251,7 @@ async def test_lock_event_triggers_state_refresh(
     from homeassistant.helpers.dispatcher import async_dispatcher_send
     from ttlock_ble import LockEvent
 
-    from custom_components.ttlock_ble.connection import event_signal
+    from custom_components.hass_ttlock_ble.connection import event_signal
 
     state = hass.states.async_all("lock")[0]
     assert state.state == "locked"
@@ -277,7 +277,7 @@ async def test_lock_event_with_decoded_state_skips_query(
     from homeassistant.helpers.dispatcher import async_dispatcher_send
     from ttlock_ble import LockEvent
 
-    from custom_components.ttlock_ble.connection import event_signal
+    from custom_components.hass_ttlock_ble.connection import event_signal
 
     state = hass.states.async_all("lock")[0]
     assert state.state == "locked"
@@ -308,12 +308,12 @@ async def test_lock_event_with_decoded_state_respects_settle_window(
     from homeassistant.helpers.dispatcher import async_dispatcher_send
     from ttlock_ble import LockEvent
 
-    from custom_components.ttlock_ble.connection import event_signal
+    from custom_components.hass_ttlock_ble.connection import event_signal
 
     mock_ttlock_connection.async_query_state = AsyncMock(return_value=None)
     state = hass.states.async_all("lock")[0]
     assert state.state == "locked"
-    with patch("custom_components.ttlock_ble.lock.COMMAND_SETTLE_SECONDS", 60.0):
+    with patch("custom_components.hass_ttlock_ble.lock.COMMAND_SETTLE_SECONDS", 60.0):
         await hass.services.async_call(
             LOCK_DOMAIN,
             SERVICE_UNLOCK,
@@ -612,7 +612,7 @@ async def test_push_with_an_undecodable_state_byte_falls_back_to_a_query(
     from homeassistant.helpers.dispatcher import async_dispatcher_send
     from ttlock_ble import LockEvent
 
-    from custom_components.ttlock_ble.connection import event_signal
+    from custom_components.hass_ttlock_ble.connection import event_signal
 
     # A state byte outside the two the firmware defines decodes to None,
     # which is the only "unknown" the entity can ever be handed.
@@ -638,7 +638,7 @@ async def test_lock_event_forced_query_returns_none_keeps_state(
     from homeassistant.helpers.dispatcher import async_dispatcher_send
     from ttlock_ble import LockEvent
 
-    from custom_components.ttlock_ble.connection import event_signal
+    from custom_components.hass_ttlock_ble.connection import event_signal
 
     state = hass.states.async_all("lock")[0]
     assert state.state == "locked"
@@ -660,12 +660,12 @@ def test_lock_sync_from_coordinator_no_snapshot_keeps_state(
     """An empty coordinator snapshot leaves `_attr_is_locked` untouched."""
     from unittest.mock import MagicMock
 
-    from custom_components.ttlock_ble.clock_sync_store import TtlockBleClockSyncStore
-    from custom_components.ttlock_ble.coordinator import TtlockBleDataUpdateCoordinator
-    from custom_components.ttlock_ble.device_description_store import (
+    from custom_components.hass_ttlock_ble.clock_sync_store import TtlockBleClockSyncStore
+    from custom_components.hass_ttlock_ble.coordinator import TtlockBleDataUpdateCoordinator
+    from custom_components.hass_ttlock_ble.device_description_store import (
         TtlockBleDeviceDescriptionStore,
     )
-    from custom_components.ttlock_ble.lock import TtlockBleLock
+    from custom_components.hass_ttlock_ble.lock import TtlockBleLock
 
     coordinator = TtlockBleDataUpdateCoordinator(
         hass,
