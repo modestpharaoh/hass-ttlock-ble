@@ -31,5 +31,5 @@ jobs:
       contents: write
     uses: roquerodrigo/workflows/.github/workflows/publish-hacs-zip.yml@main
     with:
-      domain: ttlock_ble
+      domain: hass_ttlock_ble
       ref: ${{ needs.release.outputs.tag-name }}
