@@ -26,18 +26,6 @@ if TYPE_CHECKING:
     from .data import TtlockBleConfigEntry
 
 
-def _can_manage_sound(key: VirtualKey) -> bool:
-    """
-    Report whether this key may change lock settings at all.
-
-    The firmware gates the command behind CHECK_ADMIN, which needs both
-    an admin key and the admin passcode that authorises it. A key
-    obtained outside a TTLock account often carries no passcode, and an
-    entity that can only ever fail is worse than no entity.
-    """
-    return key.is_admin() and bool(key.adminPs)
-
-
 async def async_setup_entry(
     hass: HomeAssistant,  # noqa: ARG001
     entry: TtlockBleConfigEntry,
@@ -49,8 +37,7 @@ async def async_setup_entry(
 
     for key in data.virtual_keys:
         conn = data.connections[key.lockMac]
-        if _can_manage_sound(key):
-            switches.append(TtlockBleSoundSwitch(data.coordinator, key, conn))
+        switches.append(TtlockBleSoundSwitch(data.coordinator, key, conn))
         switches.append(TtlockBleAutoLockSwitch(data.coordinator, key, conn))
         switches.append(TtlockBlePassageModeSwitch(data.coordinator, key, conn))
 

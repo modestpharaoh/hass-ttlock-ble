@@ -83,7 +83,7 @@ async def test_a_refused_command_surfaces_and_keeps_the_old_value(
     assert hass.states.get(state.entity_id).state == "on"
 
 
-async def test_no_switch_without_the_admin_passcode(
+async def test_switch_created_without_the_admin_passcode(
     hass,
     sample_stored_key,
     enable_bluetooth,
@@ -91,7 +91,7 @@ async def test_no_switch_without_the_admin_passcode(
     mock_cloud,
     mock_ttlock_connection,
 ) -> None:
-    """CHECK_ADMIN needs it; an entity that can only ever fail is worse than none."""
+    """Sound switch is always created so users can toggle lock beep."""
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
     from custom_components.hass_ttlock_ble.const import DOMAIN
@@ -106,10 +106,10 @@ async def test_no_switch_without_the_admin_passcode(
     entry.add_to_hass(hass)
     await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
-    assert hass.states.get("switch.front_door_sound") is None
+    assert hass.states.get("switch.front_door_sound") is not None
 
 
-async def test_no_switch_for_a_non_admin_key(
+async def test_switch_created_for_a_non_admin_key(
     hass,
     sample_stored_key,
     enable_bluetooth,
@@ -117,6 +117,7 @@ async def test_no_switch_for_a_non_admin_key(
     mock_cloud,
     mock_ttlock_connection,
 ) -> None:
+    """Sound switch is always created so users can toggle lock beep."""
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
     from custom_components.hass_ttlock_ble.const import DOMAIN
@@ -131,4 +132,4 @@ async def test_no_switch_for_a_non_admin_key(
     entry.add_to_hass(hass)
     await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
-    assert hass.states.get("switch.front_door_sound") is None
+    assert hass.states.get("switch.front_door_sound") is not None
