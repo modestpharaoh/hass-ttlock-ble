@@ -51,7 +51,9 @@ async def test_locks_keep_separate_records(hass) -> None:
 
 async def test_every_entry_shares_one_store(hass) -> None:
     """Two instances over one storage key take turns dropping each other's writes."""
-    from custom_components.hass_ttlock_ble.clock_sync_store import async_get_clock_sync_store
+    from custom_components.hass_ttlock_ble.clock_sync_store import (
+        async_get_clock_sync_store,
+    )
 
     first = await async_get_clock_sync_store(hass)
     first.async_remember(MAC, SYNC)

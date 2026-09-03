@@ -3,21 +3,22 @@
 from __future__ import annotations
 
 import datetime as dt
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
+import voluptuous as vol
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.device_registry import (
     async_get as async_get_device_registry,
+)
+from homeassistant.helpers.device_registry import (
     format_mac,
 )
 from homeassistant.helpers.entity_registry import (
     async_get as async_get_entity_registry,
 )
-import voluptuous as vol
-
 from ttlock_ble import TTLockError
 
 from .const import (
@@ -81,7 +82,7 @@ DAY_INDEX_TO_NAME: dict[int, str] = {
     7: "sunday",
 }
 
-SCHEMA_BASE_TARGET = {
+SCHEMA_BASE_TARGET: dict[Any, Any] = {
     vol.Optional("device_id"): vol.Any(cv.string, [cv.string]),
     vol.Optional("entity_id"): vol.Any(cv.string, [cv.string]),
 }
@@ -284,27 +285,29 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     async def async_handle_get_passage_mode(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_passage_mode."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 schedules = await conn.async_get_passage_mode()
                 for slot in schedules:
-                    results.append({
-                        "lock_mac": conn.key.lockMac,
-                        "week_or_day": slot["week_or_day"],
-                        "day_name": DAY_INDEX_TO_NAME.get(
-                            slot["week_or_day"],
-                            "everyday",
-                        ),
-                        "start_time": (
-                            f"{slot['start_hour']:02d}:{slot['start_minute']:02d}"
-                        ),
-                        "end_time": (
-                            f"{slot['end_hour']:02d}:{slot['end_minute']:02d}"
-                        ),
-                        "type": slot["type"],
-                        "month": slot["month"],
-                    })
+                    results.append(
+                        {
+                            "lock_mac": conn.key.lockMac,
+                            "week_or_day": slot["week_or_day"],
+                            "day_name": DAY_INDEX_TO_NAME.get(
+                                slot["week_or_day"],
+                                "everyday",
+                            ),
+                            "start_time": (
+                                f"{slot['start_hour']:02d}:{slot['start_minute']:02d}"
+                            ),
+                            "end_time": (
+                                f"{slot['end_hour']:02d}:{slot['end_minute']:02d}"
+                            ),
+                            "type": slot["type"],
+                            "month": slot["month"],
+                        }
+                    )
             except TTLockError as exc:
                 raise HomeAssistantError(
                     f"Failed to query passage mode for {conn.key.lockMac}: {exc}"
@@ -354,7 +357,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     async def async_handle_get_auto_lock_time(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_auto_lock_time."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 info = await conn.async_get_auto_lock_info()
@@ -368,7 +371,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     async def async_handle_get_lock_time(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_lock_time."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 clock_info = await conn.async_get_lock_clock()
@@ -389,7 +392,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         to_seq_int = int(to_sequence) if to_sequence is not None else None
         start_date = call.data.get("start_date")
         end_date = call.data.get("end_date")
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 records = await conn.async_fetch_operation_log(
@@ -410,7 +413,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     async def async_handle_get_passcodes(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_passcodes."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 codes = await conn.async_get_passcodes()
@@ -425,7 +428,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     async def async_handle_get_cards(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_cards."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 cards = await conn.async_get_cards()
@@ -440,7 +443,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     async def async_handle_get_fingerprints(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_fingerprints."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 fps = await conn.async_get_fingerprints()

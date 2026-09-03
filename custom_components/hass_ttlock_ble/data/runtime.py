@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from homeassistant.core import CALLBACK_TYPE
-
     from ttlock_ble import VirtualKey
 
     from ..connection import TtlockBleConnection

@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.exceptions import HomeAssistantError
+from ttlock_ble import TTLockError
 
 from custom_components.hass_ttlock_ble.number import (
     TtlockBleAutoLockTimeNumber,
@@ -15,7 +16,6 @@ from custom_components.hass_ttlock_ble.switch import (
     TtlockBleAutoLockSwitch,
     TtlockBlePassageModeSwitch,
 )
-from ttlock_ble import TTLockError
 
 
 @pytest.mark.asyncio
@@ -135,4 +135,3 @@ async def test_sound_volume_number_entity() -> None:
     connection.async_set_lock_volume.side_effect = TTLockError("BLE drop")
     with pytest.raises(HomeAssistantError):
         await number.async_set_native_value(5.0)
-

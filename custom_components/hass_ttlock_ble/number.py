@@ -9,7 +9,6 @@ from homeassistant.const import EntityCategory, UnitOfTime
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-
 from ttlock_ble import TTLockError
 
 from .connection import auto_lock_signal, sound_volume_signal
@@ -18,7 +17,6 @@ from .entity import TtlockBleEntity
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
     from ttlock_ble import VirtualKey
 
     from .connection import TtlockBleConnection
@@ -203,4 +201,3 @@ class TtlockBleSoundVolumeNumber(TtlockBleEntity, NumberEntity):
             raise HomeAssistantError(
                 f"Failed to set sound volume for {self._key.lockMac}: {exc}"
             ) from exc
-

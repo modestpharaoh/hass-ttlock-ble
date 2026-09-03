@@ -159,7 +159,10 @@ async def test_permanent_connection_starts_the_session(
     """The option is what asks for a session to be held open."""
     from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    from custom_components.hass_ttlock_ble.const import CONF_PERMANENT_CONNECTION, DOMAIN
+    from custom_components.hass_ttlock_ble.const import (
+        CONF_PERMANENT_CONNECTION,
+        DOMAIN,
+    )
 
     entry = MockConfigEntry(
         domain=DOMAIN,

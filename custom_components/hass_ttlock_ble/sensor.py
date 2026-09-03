@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from datetime import datetime, time, timedelta
 from typing import TYPE_CHECKING, Any
 
@@ -21,7 +22,7 @@ from homeassistant.const import (
     EntityCategory,
     UnitOfTime,
 )
-from homeassistant.core import callback
+from homeassistant.core import CALLBACK_TYPE, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.event import (
     async_track_point_in_time,
@@ -29,7 +30,6 @@ from homeassistant.helpers.event import (
 )
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.util import dt as dt_util
-
 from ttlock_ble.constants import LogOperate
 
 from .binary_sensor import (
@@ -46,11 +46,8 @@ from .entity import TtlockBleEntity
 from .event import PASSCODE_RECORD_TYPES, _record_type_name
 
 if TYPE_CHECKING:
-    from datetime import datetime
-
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
     from ttlock_ble import LockEvent, LogEntry, VirtualKey
 
     from .connection import TtlockBleConnection
@@ -73,16 +70,22 @@ async def async_setup_entry(
 
     for key in data.virtual_keys:
         conn = data.connections[key.lockMac]
-        sensors.extend([
-            TtlockBleBatterySensor(data.coordinator, key),
-            TtlockBleLastSeenSensor(data.coordinator, key),
-            TtlockBleClockDriftSensor(data.coordinator, key),
-            TtlockBleLastUnlockMethodSensor(data.coordinator, key, conn),
-            TtlockBleCredentialsCountSensor(data.coordinator, key, conn, "passcodes"),
-            TtlockBleCredentialsCountSensor(data.coordinator, key, conn, "cards"),
-            TtlockBleCredentialsCountSensor(data.coordinator, key, conn, "fingerprints"),
-            TtlockBlePassageModeScheduleSensor(data.coordinator, key, conn),
-        ])
+        sensors.extend(
+            [
+                TtlockBleBatterySensor(data.coordinator, key),
+                TtlockBleLastSeenSensor(data.coordinator, key),
+                TtlockBleClockDriftSensor(data.coordinator, key),
+                TtlockBleLastUnlockMethodSensor(data.coordinator, key, conn),
+                TtlockBleCredentialsCountSensor(
+                    data.coordinator, key, conn, "passcodes"
+                ),
+                TtlockBleCredentialsCountSensor(data.coordinator, key, conn, "cards"),
+                TtlockBleCredentialsCountSensor(
+                    data.coordinator, key, conn, "fingerprints"
+                ),
+                TtlockBlePassageModeScheduleSensor(data.coordinator, key, conn),
+            ]
+        )
 
     async_add_entities(sensors)
 
@@ -321,7 +324,7 @@ def format_unlock_method(entry: LogEntry) -> str:
     ):
         return f"Face ({cred})" if cred else "Face"
 
-    if rtype == LogOperate.AUTO_LOCK:
+    if rtype == getattr(LogOperate, "AUTO_LOCK", -1):
         return "Auto-Lock"
 
     if rtype == LogOperate.OPERATE_KEY_UNLOCK:
@@ -392,7 +395,10 @@ class TtlockBleLastUnlockMethodSensor(TtlockBleEntity, RestoreEntity, SensorEnti
             attrs["operate_date"] = entry.operate_date.isoformat()
         if entry.uid is not None:
             attrs["uid"] = entry.uid
-        if entry.password is not None and entry.record_type not in PASSCODE_RECORD_TYPES:
+        if (
+            entry.password is not None
+            and entry.record_type not in PASSCODE_RECORD_TYPES
+        ):
             attrs["credential"] = entry.password
         if entry.key_id is not None:
             attrs["key_id"] = entry.key_id
@@ -447,7 +453,7 @@ class TtlockBleCredentialsCountSensor(TtlockBleEntity, RestoreEntity, SensorEnti
                 try:
                     count = int(last_state.state)
                     self._connection.set_credential_count(self._cred_type, count)
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     pass
 
         self.async_on_remove(
@@ -466,15 +472,17 @@ class TtlockBleCredentialsCountSensor(TtlockBleEntity, RestoreEntity, SensorEnti
 
 
 def format_passage_mode_status(
-    schedules: list[dict[str, Any]],
+    schedules: Sequence[Mapping[str, Any]],
     now: datetime,
 ) -> str:
-    """Format a dynamic, meaningful passage mode status.
+    """
+    Format a dynamic, meaningful passage mode status.
 
     Returns:
       - 'Active (until HH:MM)' when currently holding the door unlocked.
       - 'Next: Today HH:MM' / 'Next: Tomorrow HH:MM' / 'Next: Day HH:MM' when inactive.
       - 'No schedule' when no slots are configured.
+
     """
     if not schedules:
         return "No schedule"
@@ -503,7 +511,7 @@ def format_passage_mode_status(
             return f"Active (until {slot.get('end_hour', 0):02d}:{slot.get('end_minute', 0):02d})"
 
     # 2. If inactive, find the earliest next upcoming slot
-    candidate_slots: list[tuple[datetime, dict[str, Any]]] = []
+    candidate_slots: list[tuple[datetime, Mapping[str, Any]]] = []
     for day_offset in range(8):
         target_date = (now + timedelta(days=day_offset)).date()
         target_weekday = target_date.isoweekday()
@@ -534,9 +542,7 @@ def format_passage_mode_status(
         candidate_slots.sort(key=lambda item: item[0])
         next_dt, next_slot = candidate_slots[0]
         days_ahead = (next_dt.date() - now.date()).days
-        start_str = (
-            f"{next_slot.get('start_hour', 0):02d}:{next_slot.get('start_minute', 0):02d}"
-        )
+        start_str = f"{next_slot.get('start_hour', 0):02d}:{next_slot.get('start_minute', 0):02d}"
 
         if days_ahead == 0:
             return f"Next: Today {start_str}"
@@ -558,7 +564,7 @@ def format_passage_mode_status(
 
 
 def get_passage_schedule_attributes(
-    schedules: list[dict[str, Any]],
+    schedules: Sequence[Mapping[str, Any]],
     now: datetime,
 ) -> dict[str, Any]:
     """Calculate comprehensive attributes for passage schedule sensor."""
@@ -587,7 +593,7 @@ def get_passage_schedule_attributes(
 
     return {
         "schedules": format_schedules_attribute(schedules),
-        "raw_schedules": schedules,
+        "raw_schedules": [dict(s) for s in schedules],
         "schedule_count": len(schedules),
         "today_slots": today_slots,
         "active_slot": active_slot,
@@ -610,8 +616,10 @@ class TtlockBlePassageModeScheduleSensor(TtlockBleEntity, RestoreEntity, SensorE
         """Bind sensor to coordinator, key, and connection."""
         super().__init__(coordinator, key)
         self._connection = connection
-        self._schedules: list[dict[str, Any]] = list(connection.passage_schedules)
-        self._unsub_transition: callback | None = None
+        self._schedules: list[dict[str, Any]] = [
+            dict(s) for s in connection.passage_schedules
+        ]
+        self._unsub_transition: CALLBACK_TYPE | None = None
 
     @property
     def unique_id(self) -> str:
@@ -634,7 +642,7 @@ class TtlockBlePassageModeScheduleSensor(TtlockBleEntity, RestoreEntity, SensorE
         if (last_state := await self.async_get_last_state()) is not None:
             raw = last_state.attributes.get("raw_schedules")
             if raw and not self._schedules:
-                self._schedules = list(raw)
+                self._schedules = [dict(s) for s in raw]
 
         self.async_on_remove(
             async_dispatcher_connect(
@@ -656,9 +664,11 @@ class TtlockBlePassageModeScheduleSensor(TtlockBleEntity, RestoreEntity, SensorE
     def _on_passage_mode_update(self, schedules_or_active: Any) -> None:
         """Update schedule from dispatcher signal."""
         if isinstance(schedules_or_active, list):
-            self._schedules = list(schedules_or_active)
+            self._schedules = [dict(s) for s in schedules_or_active]
         elif self._connection.passage_schedules:
-            self._schedules = list(self._connection.passage_schedules)
+            self._schedules = [dict(s) for s in self._connection.passage_schedules]
+        self.async_write_ha_state()
+        self._schedule_next_transition()
         self.async_write_ha_state()
         self._schedule_next_transition()
 

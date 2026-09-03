@@ -17,12 +17,11 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import datetime as dt
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.bluetooth import async_ble_device_from_address
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util import dt as dt_util
-
 from ttlock_ble import TTLockClient, TTLockError
 
 from .const import DOMAIN, LOGGER
@@ -44,7 +43,6 @@ if TYPE_CHECKING:
 
     from bleak import BleakClient
     from homeassistant.core import HomeAssistant
-
     from ttlock_ble import DeviceInfo, LockEvent, LockState, LogEntry, VirtualKey
 
     from .data import TtlockBlePassageSchedule
@@ -540,15 +538,18 @@ class TtlockBleConnection:
                 highest_seen = max(self._seen_records)
                 target_start_record = max(0, highest_seen - max_entries + 1)
 
-            if target_start_record is not None:
-                seq = target_start_record
-            else:
-                seq = 0xFFFF
+            seq = target_start_record if target_start_record is not None else 0xFFFF
 
             # If filtering by to_sequence or date, fetch enough entries so filtering does not truncate
             if to_sequence is not None and target_start_record is not None:
-                fetch_count = max(max_entries, (to_sequence - target_start_record + 1)) + 5
-            elif to_sequence is not None or start_date is not None or end_date is not None:
+                fetch_count = (
+                    max(max_entries, (to_sequence - target_start_record + 1)) + 5
+                )
+            elif (
+                to_sequence is not None
+                or start_date is not None
+                or end_date is not None
+            ):
                 fetch_count = max_entries + 50
             else:
                 fetch_count = max_entries
@@ -587,7 +588,10 @@ class TtlockBleConnection:
             # Filter entries by sequence range and dates
             filtered: list[LogEntry] = []
             for entry in entries:
-                if target_start_record is not None and entry.record_number < target_start_record:
+                if (
+                    target_start_record is not None
+                    and entry.record_number < target_start_record
+                ):
                     continue
                 if to_sequence is not None and entry.record_number > to_sequence:
                     continue
@@ -595,7 +599,9 @@ class TtlockBleConnection:
                     if entry.operate_date is None:
                         continue
                     entry_dt = entry.operate_date.replace(tzinfo=None)
-                    if dt_start is not None and entry_dt < dt_start.replace(tzinfo=None):
+                    if dt_start is not None and entry_dt < dt_start.replace(
+                        tzinfo=None
+                    ):
                         continue
                     if dt_end is not None and entry_dt > dt_end.replace(tzinfo=None):
                         continue
@@ -612,20 +618,22 @@ class TtlockBleConnection:
                 rec_type_name = (
                     rec_type.name if hasattr(rec_type, "name") else str(rec_type)
                 )
-                results.append({
-                    "record_number": entry.record_number,
-                    "record_type": rec_type_name,
-                    "operate_date": (
-                        entry.operate_date.isoformat()
-                        if entry.operate_date
-                        else None
-                    ),
-                    "lock_battery": entry.lock_battery,
-                    "uid": entry.uid,
-                    "record_id": entry.record_id,
-                    "credential": entry.password,
-                    "key_id": entry.key_id,
-                })
+                results.append(
+                    {
+                        "record_number": entry.record_number,
+                        "record_type": rec_type_name,
+                        "operate_date": (
+                            entry.operate_date.isoformat()
+                            if entry.operate_date
+                            else None
+                        ),
+                        "lock_battery": entry.lock_battery,
+                        "uid": entry.uid,
+                        "record_id": entry.record_id,
+                        "credential": entry.password,
+                        "key_id": entry.key_id,
+                    }
+                )
             return results
 
     async def async_get_passcodes(self) -> list[dict[str, Any]]:

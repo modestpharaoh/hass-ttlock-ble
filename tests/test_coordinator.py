@@ -428,7 +428,9 @@ async def test_the_read_is_tried_again_after_the_cooldown(hass) -> None:
     from homeassistant.util import dt as dt_util
     from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
-    from custom_components.hass_ttlock_ble.coordinator import STATE_PROBE_COOLDOWN_SECONDS
+    from custom_components.hass_ttlock_ble.coordinator import (
+        STATE_PROBE_COOLDOWN_SECONDS,
+    )
 
     conn = _mock_connection()
     coordinator = _log_coordinator(hass, conn)

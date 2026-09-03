@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.exceptions import HomeAssistantError
+from ttlock_ble import TTLockError
 
 from custom_components.hass_ttlock_ble.button import (
     TtlockBleRefreshStateButton,
@@ -13,7 +14,6 @@ from custom_components.hass_ttlock_ble.button import (
     TtlockBleSyncLogButton,
     async_setup_entry,
 )
-from ttlock_ble import TTLockError
 
 
 @pytest.mark.asyncio

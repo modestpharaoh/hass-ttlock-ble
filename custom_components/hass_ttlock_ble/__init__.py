@@ -14,7 +14,6 @@ from homeassistant.helpers.device_registry import (
 from homeassistant.helpers.device_registry import (
     async_get as async_get_device_registry,
 )
-
 from ttlock_ble import VirtualKey
 
 from .advertisement import TtlockBleAdvertisementTracker

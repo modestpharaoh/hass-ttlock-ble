@@ -30,7 +30,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
-
     from ttlock_ble import LockAdvertisement
 
     from .data import (

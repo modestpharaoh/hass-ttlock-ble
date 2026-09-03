@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from ttlock_ble.constants import ResponseStatus
 
 from custom_components.hass_ttlock_ble.credentials import (
     CMD_FR_MANAGE,
@@ -20,7 +21,6 @@ from custom_components.hass_ttlock_ble.credentials import (
     parse_ic_cards_query_response,
     parse_passcodes_query_response,
 )
-from ttlock_ble.constants import ResponseStatus
 
 
 def test_build_payloads() -> None:
@@ -44,30 +44,32 @@ def test_parse_passcodes_query_response() -> None:
     # data[0:2]: totalLen
     # data[2:4]: sequence (0=done)
     # entry 1: item_len, type=1 (permanent), new_pwd_len=4 ("1234"), pwd_len=4 ("1234"), start_date (5 bytes: 26, 9, 2, 8, 0)
-    data = bytes([
-        0x00,
-        0x01,  # totalLen
-        0x00,
-        0x00,  # sequence=0
-        # Entry:
-        16,  # item_len
-        0x01,  # type=1 permanent
-        0x04,  # new_pwd_len
-        0x31,
-        0x32,
-        0x33,
-        0x34,  # "1234"
-        0x04,  # pwd_len
-        0x31,
-        0x32,
-        0x33,
-        0x34,  # "1234"
-        26,
-        9,
-        2,
-        8,
-        0,  # 2026-09-02 08:00
-    ])
+    data = bytes(
+        [
+            0x00,
+            0x01,  # totalLen
+            0x00,
+            0x00,  # sequence=0
+            # Entry:
+            16,  # item_len
+            0x01,  # type=1 permanent
+            0x04,  # new_pwd_len
+            0x31,
+            0x32,
+            0x33,
+            0x34,  # "1234"
+            0x04,  # pwd_len
+            0x31,
+            0x32,
+            0x33,
+            0x34,  # "1234"
+            26,
+            9,
+            2,
+            8,
+            0,  # 2026-09-02 08:00
+        ]
+    )
     next_seq, passcodes = parse_passcodes_query_response(data)
     assert next_seq == 0
     assert len(passcodes) == 1
@@ -86,26 +88,28 @@ def test_parse_ic_cards_query_response() -> None:
     # data[1]: opType=1
     # data[2:4]: sequence=0
     # record: 4 bytes card ID (12345678), 5 bytes start, 5 bytes end
-    data = bytes([
-        0x50,  # battery=80
-        0x01,  # opType=1
-        0x00,
-        0x00,  # sequence=0
-        0x00,
-        0xBC,
-        0x61,
-        0x4E,  # card number = 12345678
-        26,
-        9,
-        2,
-        8,
-        0,  # start: 2026-09-02 08:00
-        26,
-        9,
-        2,
-        18,
-        0,  # end: 2026-09-02 18:00
-    ])
+    data = bytes(
+        [
+            0x50,  # battery=80
+            0x01,  # opType=1
+            0x00,
+            0x00,  # sequence=0
+            0x00,
+            0xBC,
+            0x61,
+            0x4E,  # card number = 12345678
+            26,
+            9,
+            2,
+            8,
+            0,  # start: 2026-09-02 08:00
+            26,
+            9,
+            2,
+            18,
+            0,  # end: 2026-09-02 18:00
+        ]
+    )
     next_seq, cards = parse_ic_cards_query_response(data)
     assert next_seq == 0
     assert len(cards) == 1
@@ -122,28 +126,30 @@ def test_parse_fingerprints_query_response() -> None:
     # data[1]: opType=1
     # data[2:4]: sequence=0
     # record: 6 bytes fp ID, 5 bytes start, 5 bytes end
-    data = bytes([
-        0x50,  # battery=80
-        0x01,  # opType=1
-        0x00,
-        0x00,  # sequence=0
-        0x00,
-        0x00,
-        0x00,
-        0x01,
-        0x02,
-        0x03,  # fp ID = 66051
-        26,
-        9,
-        2,
-        8,
-        0,  # start: 2026-09-02 08:00
-        26,
-        9,
-        2,
-        18,
-        0,  # end: 2026-09-02 18:00
-    ])
+    data = bytes(
+        [
+            0x50,  # battery=80
+            0x01,  # opType=1
+            0x00,
+            0x00,  # sequence=0
+            0x00,
+            0x00,
+            0x00,
+            0x01,
+            0x02,
+            0x03,  # fp ID = 66051
+            26,
+            9,
+            2,
+            8,
+            0,  # start: 2026-09-02 08:00
+            26,
+            9,
+            2,
+            18,
+            0,  # end: 2026-09-02 18:00
+        ]
+    )
     next_seq, fps = parse_fingerprints_query_response(data)
     assert next_seq == 0
     assert len(fps) == 1

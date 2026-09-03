@@ -7,7 +7,6 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from ttlock_ble import TTLockError
 from ttlock_ble.constants import ResponseStatus
-from ttlock_ble.protocol import Frame
 
 from custom_components.hass_ttlock_ble.data import TtlockBlePassageSchedule
 from custom_components.hass_ttlock_ble.passage import (
@@ -16,10 +15,8 @@ from custom_components.hass_ttlock_ble.passage import (
     PASSAGE_MODE_CLEAR,
     PASSAGE_MODE_DELETE,
     PASSAGE_MODE_QUERY,
-    PASSAGE_TYPE_MONTHLY,
     PASSAGE_TYPE_WEEKLY,
     async_client_clear_passage_mode,
-    async_client_delete_passage_mode,
     async_client_get_passage_mode,
     async_client_set_passage_mode,
     build_passage_clear_payload,
@@ -31,7 +28,6 @@ from custom_components.hass_ttlock_ble.passage import (
 from custom_components.hass_ttlock_ble.services import (
     _parse_days,
     _parse_schedules_from_call,
-    _parse_single_slot,
     _parse_time_component,
 )
 
@@ -63,52 +59,60 @@ def test_build_passage_set_payload_valid() -> None:
         "end_minute": 0,
     }
     payload = build_passage_set_payload(schedule)
-    assert payload == bytes([
-        PASSAGE_MODE_ADD,
-        0x01,  # type: weekly
-        0x01,  # Monday
-        0x00,  # month 0
-        0x08,  # 8 AM
-        0x1E,  # 30 min
-        0x11,  # 17 (5 PM)
-        0x00,  # 0 min
-    ])
+    assert payload == bytes(
+        [
+            PASSAGE_MODE_ADD,
+            0x01,  # type: weekly
+            0x01,  # Monday
+            0x00,  # month 0
+            0x08,  # 8 AM
+            0x1E,  # 30 min
+            0x11,  # 17 (5 PM)
+            0x00,  # 0 min
+        ]
+    )
 
 
 def test_build_passage_set_payload_validation_errors() -> None:
     """Test validation errors for invalid hours, minutes, and day."""
     with pytest.raises(ValueError, match="Invalid start time"):
-        build_passage_set_payload({
-            "type": PASSAGE_TYPE_WEEKLY,
-            "week_or_day": 1,
-            "month": 0,
-            "start_hour": 24,
-            "start_minute": 0,
-            "end_hour": 17,
-            "end_minute": 0,
-        })
+        build_passage_set_payload(
+            {
+                "type": PASSAGE_TYPE_WEEKLY,
+                "week_or_day": 1,
+                "month": 0,
+                "start_hour": 24,
+                "start_minute": 0,
+                "end_hour": 17,
+                "end_minute": 0,
+            }
+        )
 
     with pytest.raises(ValueError, match="Invalid end time"):
-        build_passage_set_payload({
-            "type": PASSAGE_TYPE_WEEKLY,
-            "week_or_day": 1,
-            "month": 0,
-            "start_hour": 8,
-            "start_minute": 0,
-            "end_hour": 17,
-            "end_minute": 60,
-        })
+        build_passage_set_payload(
+            {
+                "type": PASSAGE_TYPE_WEEKLY,
+                "week_or_day": 1,
+                "month": 0,
+                "start_hour": 8,
+                "start_minute": 0,
+                "end_hour": 17,
+                "end_minute": 60,
+            }
+        )
 
     with pytest.raises(ValueError, match="Invalid week_or_day"):
-        build_passage_set_payload({
-            "type": PASSAGE_TYPE_WEEKLY,
-            "week_or_day": 8,
-            "month": 0,
-            "start_hour": 8,
-            "start_minute": 0,
-            "end_hour": 17,
-            "end_minute": 0,
-        })
+        build_passage_set_payload(
+            {
+                "type": PASSAGE_TYPE_WEEKLY,
+                "week_or_day": 8,
+                "month": 0,
+                "start_hour": 8,
+                "start_minute": 0,
+                "end_hour": 17,
+                "end_minute": 0,
+            }
+        )
 
 
 def test_build_passage_delete_payload() -> None:
@@ -123,16 +127,18 @@ def test_build_passage_delete_payload() -> None:
         "end_minute": 45,
     }
     payload = build_passage_delete_payload(schedule)
-    assert payload == bytes([
-        PASSAGE_MODE_DELETE,
-        0x01,
-        0x05,
-        0x00,
-        0x09,
-        0x0F,
-        0x12,
-        0x2D,
-    ])
+    assert payload == bytes(
+        [
+            PASSAGE_MODE_DELETE,
+            0x01,
+            0x05,
+            0x00,
+            0x09,
+            0x0F,
+            0x12,
+            0x2D,
+        ]
+    )
 
 
 def test_parse_passage_query_response() -> None:
@@ -143,25 +149,27 @@ def test_parse_passage_query_response() -> None:
 
     # Two slots: battery=80, opType=1, sequence=0
     # Monday 08:30–12:00 and Monday 14:00–18:00
-    data = bytes([
-        0x50,  # battery=80%
-        0x01,  # opType=1
-        0x00,  # sequence=0 (done)
-        0x01,
-        0x01,
-        0x00,
-        0x08,
-        0x1E,
-        0x0C,
-        0x00,  # slot 1
-        0x01,
-        0x01,
-        0x00,
-        0x0E,
-        0x00,
-        0x12,
-        0x00,  # slot 2
-    ])
+    data = bytes(
+        [
+            0x50,  # battery=80%
+            0x01,  # opType=1
+            0x00,  # sequence=0 (done)
+            0x01,
+            0x01,
+            0x00,
+            0x08,
+            0x1E,
+            0x0C,
+            0x00,  # slot 1
+            0x01,
+            0x01,
+            0x00,
+            0x0E,
+            0x00,
+            0x12,
+            0x00,  # slot 2
+        ]
+    )
     next_seq, schedules = parse_passage_query_response(data)
     assert next_seq == 0
     assert len(schedules) == 2

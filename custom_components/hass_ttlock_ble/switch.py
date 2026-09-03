@@ -9,7 +9,6 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-
 from ttlock_ble import TTLockError
 
 from .connection import auto_lock_signal, passage_mode_signal
@@ -20,7 +19,6 @@ from .entity import TtlockBleEntity
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
     from ttlock_ble import VirtualKey
 
     from .connection import TtlockBleConnection
@@ -52,15 +50,9 @@ async def async_setup_entry(
     for key in data.virtual_keys:
         conn = data.connections[key.lockMac]
         if _can_manage_sound(key):
-            switches.append(
-                TtlockBleSoundSwitch(data.coordinator, key, conn)
-            )
-        switches.append(
-            TtlockBleAutoLockSwitch(data.coordinator, key, conn)
-        )
-        switches.append(
-            TtlockBlePassageModeSwitch(data.coordinator, key, conn)
-        )
+            switches.append(TtlockBleSoundSwitch(data.coordinator, key, conn))
+        switches.append(TtlockBleAutoLockSwitch(data.coordinator, key, conn))
+        switches.append(TtlockBlePassageModeSwitch(data.coordinator, key, conn))
 
     async_add_entities(switches)
 
@@ -260,7 +252,9 @@ class TtlockBlePassageModeSwitch(TtlockBleEntity, SwitchEntity):
             end_minute=1,
         )
         try:
-            await self._connection.async_set_passage_mode([schedule], clear_existing=True)
+            await self._connection.async_set_passage_mode(
+                [schedule], clear_existing=True
+            )
         except TTLockError as exc:
             raise HomeAssistantError(
                 f"Failed to enable passage mode for {self._key.lockMac}: {exc}"

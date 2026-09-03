@@ -660,8 +660,12 @@ def test_lock_sync_from_coordinator_no_snapshot_keeps_state(
     """An empty coordinator snapshot leaves `_attr_is_locked` untouched."""
     from unittest.mock import MagicMock
 
-    from custom_components.hass_ttlock_ble.clock_sync_store import TtlockBleClockSyncStore
-    from custom_components.hass_ttlock_ble.coordinator import TtlockBleDataUpdateCoordinator
+    from custom_components.hass_ttlock_ble.clock_sync_store import (
+        TtlockBleClockSyncStore,
+    )
+    from custom_components.hass_ttlock_ble.coordinator import (
+        TtlockBleDataUpdateCoordinator,
+    )
     from custom_components.hass_ttlock_ble.device_description_store import (
         TtlockBleDeviceDescriptionStore,
     )
