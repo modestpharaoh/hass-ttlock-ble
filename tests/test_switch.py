@@ -133,3 +133,37 @@ async def test_switch_created_for_a_non_admin_key(
     await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     assert hass.states.get("switch.front_door_sound") is not None
+
+
+async def test_sound_switch_restores_state(
+    hass,
+    sample_stored_key,
+    enable_bluetooth,
+    enable_custom_integrations,
+    mock_cloud,
+    mock_ttlock_connection,
+) -> None:
+    """Sound switch restores its previous on/off state across reloads."""
+    from homeassistant.core import State
+    from pytest_homeassistant_custom_component.common import (
+        MockConfigEntry,
+        mock_restore_cache,
+    )
+
+    from custom_components.hass_ttlock_ble.const import DOMAIN
+
+    mock_restore_cache(
+        hass,
+        (State("switch.front_door_sound", "on"),),
+    )
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={"username": "u", "password": "p", "keys": [sample_stored_key]},
+        unique_id="u",
+    )
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert hass.states.get("switch.front_door_sound").state == "on"

@@ -135,3 +135,25 @@ async def test_sound_volume_number_entity() -> None:
     connection.async_set_lock_volume.side_effect = TTLockError("BLE drop")
     with pytest.raises(HomeAssistantError):
         await number.async_set_native_value(5.0)
+
+
+@pytest.mark.asyncio
+async def test_sound_volume_restore_state() -> None:
+    """Test sound volume restores state on added to hass."""
+    from homeassistant.core import State
+
+    coordinator = MagicMock()
+    key = MagicMock()
+    key.lockMac = "AA:BB:CC:DD:EE:FF"
+    connection = MagicMock()
+    connection.sound_volume = None
+
+    number = TtlockBleSoundVolumeNumber(coordinator, key, connection)
+    number.async_get_last_state = AsyncMock(
+        return_value=State("number.front_door_sound_volume", "4.0")
+    )
+    number.hass = MagicMock()
+
+    await number.async_added_to_hass()
+    assert number.native_value == 4.0
+    assert connection.sound_volume == 4

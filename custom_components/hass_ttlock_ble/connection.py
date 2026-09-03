@@ -90,6 +90,11 @@ def credentials_count_signal(mac: str) -> str:
     return f"{DOMAIN}_credentials_count_{mac.lower()}"
 
 
+def sound_signal(mac: str) -> str:
+    """Dispatcher signal that carries sound enable/disable changes for `mac`."""
+    return f"{DOMAIN}_sound_{mac.lower()}"
+
+
 def sound_volume_signal(mac: str) -> str:
     """Dispatcher signal that carries sound volume changes for `mac`."""
     return f"{DOMAIN}_sound_volume_{mac.lower()}"
@@ -138,6 +143,7 @@ class TtlockBleConnection:
             "fingerprints": None,
         }
         self._sound_volume: int | None = None
+        self._sound_enabled: bool | None = None
 
     @property
     def key(self) -> VirtualKey:
@@ -178,6 +184,21 @@ class TtlockBleConnection:
     def sound_volume(self) -> int | None:
         """Return the last set sound volume level (1-5)."""
         return self._sound_volume
+
+    @sound_volume.setter
+    def sound_volume(self, value: int | None) -> None:
+        """Update cached sound volume level."""
+        self._sound_volume = value
+
+    @property
+    def sound_enabled(self) -> bool | None:
+        """Return the last set sound state (True for on, False for off)."""
+        return self._sound_enabled
+
+    @sound_enabled.setter
+    def sound_enabled(self, value: bool | None) -> None:
+        """Update cached sound state."""
+        self._sound_enabled = value
 
     def get_credential_count(self, cred_type: str) -> int | None:
         """Return cached count for a credential type."""
@@ -353,6 +374,12 @@ class TtlockBleConnection:
     async def async_set_lock_sound(self, *, enabled: bool) -> None:
         """Turn the lock's beep on or off (raises on failure)."""
         await self._async_run_command("sound_on" if enabled else "sound_off")
+        self._sound_enabled = enabled
+        async_dispatcher_send(
+            self._hass,
+            sound_signal(self._key.lockMac),
+            enabled,
+        )
 
     async def async_set_lock_volume(self, volume: int) -> None:
         """Set the lock's beep volume (1-5, raises on failure)."""

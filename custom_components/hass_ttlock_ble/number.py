@@ -5,10 +5,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from homeassistant.components.number import NumberEntity, NumberMode
-from homeassistant.const import EntityCategory, UnitOfTime
+from homeassistant.const import (
+    STATE_UNAVAILABLE,
+    STATE_UNKNOWN,
+    EntityCategory,
+    UnitOfTime,
+)
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.restore_state import RestoreEntity
 from ttlock_ble import TTLockError
 
 from .connection import auto_lock_signal, sound_volume_signal
@@ -134,7 +140,7 @@ class TtlockBleAutoLockTimeNumber(TtlockBleEntity, NumberEntity):
             ) from exc
 
 
-class TtlockBleSoundVolumeNumber(TtlockBleEntity, NumberEntity):
+class TtlockBleSoundVolumeNumber(TtlockBleEntity, RestoreEntity, NumberEntity):
     """Lock keypad and beep volume slider (levels 1 to 5)."""
 
     _attr_translation_key = "sound_volume"
@@ -171,8 +177,18 @@ class TtlockBleSoundVolumeNumber(TtlockBleEntity, NumberEntity):
         return None
 
     async def async_added_to_hass(self) -> None:
-        """Subscribe to sound volume changes."""
+        """Subscribe to sound volume changes and restore last known state."""
         await super().async_added_to_hass()
+        if (last_state := await self.async_get_last_state()) is not None:
+            if last_state.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+                try:
+                    vol = float(last_state.state)
+                    if 1.0 <= vol <= 5.0:
+                        self._volume = vol
+                        self._connection.sound_volume = int(vol)
+                except ValueError, TypeError:  # noqa: S110
+                    pass
+
         self.async_on_remove(
             async_dispatcher_connect(
                 self.hass,
