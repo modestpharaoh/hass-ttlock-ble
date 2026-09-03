@@ -106,7 +106,7 @@ async def test_no_switch_without_the_admin_passcode(
     entry.add_to_hass(hass)
     await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
-    assert hass.states.async_all("switch") == []
+    assert hass.states.get("switch.front_door_sound") is None
 
 
 async def test_no_switch_for_a_non_admin_key(
@@ -131,4 +131,4 @@ async def test_no_switch_for_a_non_admin_key(
     entry.add_to_hass(hass)
     await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
-    assert hass.states.async_all("switch") == []
+    assert hass.states.get("switch.front_door_sound") is None

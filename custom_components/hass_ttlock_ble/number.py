@@ -24,11 +24,6 @@ if TYPE_CHECKING:
     from .data import TtlockBleConfigEntry
 
 
-def _can_manage_sound(key: VirtualKey) -> bool:
-    """Report whether this key may change lock sound settings (admin with passcode)."""
-    return key.is_admin() and bool(key.adminPs)
-
-
 async def async_setup_entry(
     hass: HomeAssistant,  # noqa: ARG001
     entry: TtlockBleConfigEntry,
@@ -47,14 +42,13 @@ async def async_setup_entry(
                 conn,
             )
         )
-        if _can_manage_sound(key):
-            entities.append(
-                TtlockBleSoundVolumeNumber(
-                    data.coordinator,
-                    key,
-                    conn,
-                )
+        entities.append(
+            TtlockBleSoundVolumeNumber(
+                data.coordinator,
+                key,
+                conn,
             )
+        )
 
     async_add_entities(entities)
 

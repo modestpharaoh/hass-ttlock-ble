@@ -90,6 +90,7 @@ class TtlockBleManualKey:
             unlockKey=user_input["unlock_key"].strip(),
             lockFlagPos=0,
             timezoneRawOffSet=0,
+            userType="110301",
             adminPs=(user_input.get("admin_passcode") or "").strip(),
         )
 

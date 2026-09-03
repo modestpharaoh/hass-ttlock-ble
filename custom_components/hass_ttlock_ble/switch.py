@@ -51,8 +51,8 @@ async def async_setup_entry(
         conn = data.connections[key.lockMac]
         if _can_manage_sound(key):
             switches.append(TtlockBleSoundSwitch(data.coordinator, key, conn))
-            switches.append(TtlockBleAutoLockSwitch(data.coordinator, key, conn))
-            switches.append(TtlockBlePassageModeSwitch(data.coordinator, key, conn))
+        switches.append(TtlockBleAutoLockSwitch(data.coordinator, key, conn))
+        switches.append(TtlockBlePassageModeSwitch(data.coordinator, key, conn))
 
     async_add_entities(switches)
 
