@@ -35,7 +35,7 @@ Local control of TTLock smart locks over Bluetooth, for [Home Assistant](https:/
 
 ## Entities
 
-Each configured lock produces one HA device, carrying up to 23 entities across 7 domains:
+Each configured lock produces one HA device, carrying up to 24 entities across 7 domains:
 
 | Entity | Domain | Category | Purpose |
 |---|---|---|---|
@@ -44,6 +44,7 @@ Each configured lock produces one HA device, carrying up to 23 entities across 7
 | `switch.<alias>_auto_lock` | `switch` | Config | Enable or disable auto-relocking. Disabling sets delay to 0; enabling restores previous delay. |
 | `switch.<alias>_sound` | `switch` | Config | The lock's keypad/lock beep (admin keys only). |
 | `number.<alias>_auto_lock_time` | `number` | Config | Auto-lock delay duration in seconds (`0` disables auto-lock). |
+| `number.<alias>_sound_volume` | `number` | Config | Lock keypad and beep volume slider (levels 1 to 5, admin keys only). |
 | `binary_sensor.<alias>_passage_mode_active` | `binary_sensor` | Diagnostic | Real-time state whether passage mode is currently holding the door unlocked (`on`/`off`). Evaluates schedules in HA memory at exact boundary timestamps with 0% battery drain on the lock. |
 | `binary_sensor.<alias>_connection` | `binary_sensor` | Diagnostic | Whether a BLE session is open right now. A healthy idle lock holds none, so `off` means idle, not unreachable. |
 | `sensor.<alias>_battery` | `sensor` | Diagnostic | Battery percentage. |
@@ -81,6 +82,7 @@ The integration registers custom actions under the `hass_ttlock_ble` domain to i
 | `hass_ttlock_ble.get_passcodes` | Query all programmed keyboard passcodes (PINs), passcode types, and validity periods. | Lock entity / device |
 | `hass_ttlock_ble.get_cards` | Query all enrolled RFID / IC cards, card numbers, and validity periods. | Lock entity / device |
 | `hass_ttlock_ble.get_fingerprints` | Query all enrolled biometric fingerprints, IDs, and validity periods. | Lock entity / device |
+| `hass_ttlock_ble.set_lock_volume` | Set keypad and beep sound volume level from 1 (lowest) to 5 (highest). | Lock entity / device |
 
 ### Example: Setting Passage Mode Schedule
 

@@ -32,6 +32,7 @@ from .const import (
     SERVICE_GET_OPERATION_LOG,
     SERVICE_GET_PASSAGE_MODE,
     SERVICE_GET_PASSCODES,
+    SERVICE_SET_LOCK_VOLUME,
     SERVICE_SET_PASSAGE_MODE,
 )
 from .passage import PASSAGE_TYPE_WEEKLY
@@ -120,6 +121,16 @@ SCHEMA_DELETE_PASSAGE_MODE = vol.Schema(
         vol.Required("end_time"): cv.string,
         vol.Optional("days"): vol.Any(cv.string, int),
         vol.Optional("week_or_day"): vol.Any(cv.string, int),
+    }
+)
+
+SCHEMA_SET_LOCK_VOLUME = vol.Schema(
+    {
+        **SCHEMA_BASE_TARGET,
+        vol.Required("volume"): vol.All(
+            vol.Coerce(int),
+            vol.Range(min=1, max=5),
+        ),
     }
 )
 
@@ -441,6 +452,18 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 ) from exc
         return {"fingerprints": results}
 
+    async def async_handle_set_lock_volume(call: ServiceCall) -> None:
+        """Handle hass_ttlock_ble.set_lock_volume."""
+        connections = _async_resolve_connections(hass, call)
+        volume = int(call.data["volume"])
+        for conn in connections:
+            try:
+                await conn.async_set_lock_volume(volume)
+            except Exception as exc:
+                raise HomeAssistantError(
+                    f"Failed to set sound volume for {conn.key.lockMac}: {exc}"
+                ) from exc
+
     hass.services.async_register(
         DOMAIN,
         SERVICE_GET_PASSAGE_MODE,
@@ -508,6 +531,12 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         schema=SCHEMA_GET_PASSAGE_MODE,
         supports_response=SupportsResponse.OPTIONAL,
     )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SET_LOCK_VOLUME,
+        async_handle_set_lock_volume,
+        schema=SCHEMA_SET_LOCK_VOLUME,
+    )
     LOGGER.debug("Registered TTLock BLE services")
 
 
@@ -529,4 +558,5 @@ async def async_unload_services(hass: HomeAssistant) -> None:
     hass.services.async_remove(DOMAIN, SERVICE_GET_PASSCODES)
     hass.services.async_remove(DOMAIN, SERVICE_GET_CARDS)
     hass.services.async_remove(DOMAIN, SERVICE_GET_FINGERPRINTS)
+    hass.services.async_remove(DOMAIN, SERVICE_SET_LOCK_VOLUME)
     LOGGER.debug("Unregistered TTLock BLE services")

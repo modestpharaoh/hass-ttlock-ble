@@ -92,6 +92,11 @@ def credentials_count_signal(mac: str) -> str:
     return f"{DOMAIN}_credentials_count_{mac.lower()}"
 
 
+def sound_volume_signal(mac: str) -> str:
+    """Dispatcher signal that carries sound volume changes for `mac`."""
+    return f"{DOMAIN}_sound_volume_{mac.lower()}"
+
+
 class TtlockBleConnection:
     """Maintain a long-lived BLE session with one TTLock lock."""
 
@@ -134,6 +139,7 @@ class TtlockBleConnection:
             "cards": None,
             "fingerprints": None,
         }
+        self._sound_volume: int | None = None
 
     @property
     def key(self) -> VirtualKey:
@@ -169,6 +175,11 @@ class TtlockBleConnection:
     def passage_schedules(self) -> list[TtlockBlePassageSchedule]:
         """Return cached passage mode schedule slots."""
         return self._passage_schedules
+
+    @property
+    def sound_volume(self) -> int | None:
+        """Return the last set sound volume level (1-5)."""
+        return self._sound_volume
 
     def get_credential_count(self, cred_type: str) -> int | None:
         """Return cached count for a credential type."""
@@ -344,6 +355,36 @@ class TtlockBleConnection:
     async def async_set_lock_sound(self, *, enabled: bool) -> None:
         """Turn the lock's beep on or off (raises on failure)."""
         await self._async_run_command("sound_on" if enabled else "sound_off")
+
+    async def async_set_lock_volume(self, volume: int) -> None:
+        """Set the lock's beep volume (1-5, raises on failure)."""
+        if not 1 <= volume <= 5:
+            msg = f"Volume must be between 1 and 5, got {volume}"
+            raise ValueError(msg)
+        async with self._lock:
+            client = await self._async_ensure_connected_locked()
+            if client is None:
+                msg = f"Lock {self._key.lockMac} not reachable via Bluetooth"
+                raise TTLockError(msg)
+            try:
+                await client.set_lock_volume(volume)
+                self._sound_volume = volume
+                async_dispatcher_send(
+                    self._hass,
+                    sound_volume_signal(self._key.lockMac),
+                    volume,
+                )
+            except TTLockError:
+                await self._async_disconnect_locked()
+                raise
+            except TimeoutError as exc:
+                await self._async_disconnect_locked()
+                msg = f"Lock {self._key.lockMac} timed out setting volume"
+                raise TTLockError(msg) from exc
+            except Exception as exc:
+                await self._async_disconnect_locked()
+                msg = f"Lock {self._key.lockMac} failed to set volume: {exc}"
+                raise TTLockError(msg) from exc
 
     async def async_get_passage_mode(self) -> list[TtlockBlePassageSchedule]:
         """Fetch all passage mode schedule slots from the lock."""

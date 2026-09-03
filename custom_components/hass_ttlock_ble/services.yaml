@@ -222,3 +222,27 @@ get_fingerprints:
     entity:
       integration: hass_ttlock_ble
       domain: lock
+
+set_lock_volume:
+  name: Set lock volume
+  description: Set the keypad and beep sound volume level on the lock over Bluetooth (1 to 5).
+  target:
+    device:
+      integration: hass_ttlock_ble
+    entity:
+      integration: hass_ttlock_ble
+      domain: lock
+  fields:
+    volume:
+      name: Volume
+      description: Sound volume level from 1 (lowest) to 5 (highest).
+      required: true
+      example: 3
+      default: 3
+      selector:
+        number:
+          min: 1
+          max: 5
+          step: 1
+          mode: slider
+
