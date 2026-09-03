@@ -170,9 +170,11 @@ class TtlockBleSoundVolumeNumber(TtlockBleEntity, NumberEntity):
     @property
     def native_value(self) -> float | None:
         """Return current volume level (1-5), or None if not set."""
+        if self._volume is not None:
+            return self._volume
         if self._connection.sound_volume is not None:
             return float(self._connection.sound_volume)
-        return self._volume
+        return None
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to sound volume changes."""
