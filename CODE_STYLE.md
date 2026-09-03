@@ -1,6 +1,6 @@
 # Code Style Guide
 
-Style conventions for the `ha-ttlock-ble` project. Before committing, run
+Style conventions for the `hass-ttlock-ble` project. Before committing, run
 `uv run ruff format --check .`, `uv run ruff check .` and
 `uv run mypy custom_components/ttlock_ble`; they must exit cleanly.
 `uv run pytest` (with its coverage gate) follows.

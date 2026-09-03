@@ -1,15 +1,15 @@
 # Home Assistant TTLock BLE
 
-[![CI](https://github.com/roquerodrigo/ha-ttlock-ble/actions/workflows/ci.yml/badge.svg)](https://github.com/roquerodrigo/ha-ttlock-ble/actions/workflows/ci.yml)
+[![CI](https://github.com/modestpharaoh/hass-ttlock-ble/actions/workflows/ci.yml/badge.svg)](https://github.com/modestpharaoh/hass-ttlock-ble/actions/workflows/ci.yml)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=modestpharaoh&repository=hass-ttlock-ble&category=integration)
 
-[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white&style=for-the-badge)](https://github.com/sponsors/roquerodrigo)
-
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=roquerodrigo&repository=ha-ttlock-ble&category=integration)
+> [!NOTE]
+> This project was originally forked from [`roquerodrigo/ha-ttlock-ble`](https://github.com/roquerodrigo/ha-ttlock-ble) and diverged to support expanded Bluetooth passage mode scheduling, auto-lock controls, and on-device credential synchronization.
 
 ---
 
-Local control of TTLock smart locks over Bluetooth, for [Home Assistant](https://www.home-assistant.io/). Lock / unlock, battery level and real-time push events flow over BLE — no cloud round-trip on every operation. Built on the sibling Python SDK [`ttlock-ble`](https://github.com/roquerodrigo/ttlock-ble).
+Local control of TTLock smart locks over Bluetooth, for [Home Assistant](https://www.home-assistant.io/). Lock / unlock, battery level and real-time push events flow over BLE — no cloud round-trip on every operation. Built on the Python SDK [`ttlock-ble`](https://github.com/roquerodrigo/ttlock-ble).
 
 ## Features
 

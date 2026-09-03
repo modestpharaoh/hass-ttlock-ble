@@ -8,15 +8,15 @@
     }
   ],
   "codeowners": [
-    "@roquerodrigo"
+    "@modestpharaoh"
   ],
   "config_flow": true,
   "dependencies": [
     "bluetooth"
   ],
-  "documentation": "https://github.com/roquerodrigo/ha-ttlock-ble",
+  "documentation": "https://github.com/modestpharaoh/hass-ttlock-ble",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/roquerodrigo/ha-ttlock-ble/issues",
+  "issue_tracker": "https://github.com/modestpharaoh/hass-ttlock-ble/issues",
   "requirements": [
     "ttlock-ble==0.3.0"
   ],
