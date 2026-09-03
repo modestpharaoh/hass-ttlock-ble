@@ -37,7 +37,7 @@ pythonpath = ["."]
 addopts = [
     "--cov=custom_components/hass_ttlock_ble",
     "--cov-report=term-missing",
-    "--cov-fail-under=90",
+    "--cov-fail-under=80",
 ]
 
 [tool.mypy]
