@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.core import SupportsResponse
+from homeassistant.core import ServiceResponse, SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.device_registry import (
@@ -44,7 +44,6 @@ if TYPE_CHECKING:
     from homeassistant.core import (
         HomeAssistant,
         ServiceCall,
-        ServiceResponse,
     )
 
     from .connection import TtlockBleConnection
@@ -312,7 +311,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to query passage mode for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"schedules": results}
+        return cast(ServiceResponse, {"schedules": results})
 
     async def async_handle_set_passage_mode(call: ServiceCall) -> None:
         """Handle hass_ttlock_ble.set_passage_mode."""
@@ -366,7 +365,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get auto-lock time for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"auto_lock": results}
+        return cast(ServiceResponse, {"auto_lock": results})
 
     async def async_handle_get_lock_time(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_lock_time."""
@@ -380,7 +379,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get clock time for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"lock_times": results}
+        return cast(ServiceResponse, {"lock_times": results})
 
     async def async_handle_get_operation_log(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_operation_log."""
@@ -408,7 +407,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get operation log for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"records": results}
+        return cast(ServiceResponse, {"records": results})
 
     async def async_handle_get_passcodes(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_passcodes."""
@@ -423,7 +422,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get passcodes for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"passcodes": results}
+        return cast(ServiceResponse, {"passcodes": results})
 
     async def async_handle_get_cards(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_cards."""
@@ -438,7 +437,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get cards for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"cards": results}
+        return cast(ServiceResponse, {"cards": results})
 
     async def async_handle_get_fingerprints(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_fingerprints."""
@@ -453,7 +452,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get fingerprints for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"fingerprints": results}
+        return cast(ServiceResponse, {"fingerprints": results})
 
     async def async_handle_set_lock_volume(call: ServiceCall) -> None:
         """Handle hass_ttlock_ble.set_lock_volume."""

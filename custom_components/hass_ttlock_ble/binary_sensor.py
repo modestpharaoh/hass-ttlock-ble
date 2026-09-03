@@ -299,9 +299,9 @@ class TtlockBlePassageModeActiveBinarySensor(
     def _on_passage_mode_update(self, schedules_or_active: Any) -> None:
         """Update schedules from dispatcher signal."""
         if isinstance(schedules_or_active, list):
-            self._schedules = list(schedules_or_active)
+            self._schedules = [dict(s) for s in schedules_or_active]
         elif self._connection.passage_schedules:
-            self._schedules = list(self._connection.passage_schedules)
+            self._schedules = [dict(s) for s in self._connection.passage_schedules]
         self.async_write_ha_state()
         self._schedule_next_transition()
 
