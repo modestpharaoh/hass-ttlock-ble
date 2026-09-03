@@ -9,10 +9,10 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-
+from homeassistant.helpers.restore_state import RestoreEntity
 from ttlock_ble import TTLockError
 
-from .connection import auto_lock_signal, passage_mode_signal
+from .connection import auto_lock_signal, passage_mode_signal, sound_signal
 from .const import LOGGER
 from .data import TtlockBlePassageSchedule
 from .entity import TtlockBleEntity
@@ -20,24 +20,11 @@ from .entity import TtlockBleEntity
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
     from ttlock_ble import VirtualKey
 
     from .connection import TtlockBleConnection
     from .coordinator import TtlockBleDataUpdateCoordinator
     from .data import TtlockBleConfigEntry
-
-
-def _can_manage_sound(key: VirtualKey) -> bool:
-    """
-    Report whether this key may change lock settings at all.
-
-    The firmware gates the command behind CHECK_ADMIN, which needs both
-    an admin key and the admin passcode that authorises it. A key
-    obtained outside a TTLock account often carries no passcode, and an
-    entity that can only ever fail is worse than no entity.
-    """
-    return key.is_admin() and bool(key.adminPs)
 
 
 async def async_setup_entry(
@@ -51,21 +38,14 @@ async def async_setup_entry(
 
     for key in data.virtual_keys:
         conn = data.connections[key.lockMac]
-        if _can_manage_sound(key):
-            switches.append(
-                TtlockBleSoundSwitch(data.coordinator, key, conn)
-            )
-        switches.append(
-            TtlockBleAutoLockSwitch(data.coordinator, key, conn)
-        )
-        switches.append(
-            TtlockBlePassageModeSwitch(data.coordinator, key, conn)
-        )
+        switches.append(TtlockBleSoundSwitch(data.coordinator, key, conn))
+        switches.append(TtlockBleAutoLockSwitch(data.coordinator, key, conn))
+        switches.append(TtlockBlePassageModeSwitch(data.coordinator, key, conn))
 
     async_add_entities(switches)
 
 
-class TtlockBleSoundSwitch(TtlockBleEntity, SwitchEntity):
+class TtlockBleSoundSwitch(TtlockBleEntity, RestoreEntity, SwitchEntity):
     """
     The lock's keypad/lock beep.
 
@@ -99,6 +79,32 @@ class TtlockBleSoundSwitch(TtlockBleEntity, SwitchEntity):
         """Return a stable unique id for this entity."""
         return f"{self._key.lockMac}_sound"
 
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to sound updates and restore last known state."""
+        await super().async_added_to_hass()
+        if (last_state := await self.async_get_last_state()) is not None:
+            if last_state.state == "on":
+                self._attr_is_on = True
+                self._connection.sound_enabled = True
+            elif last_state.state == "off":
+                self._attr_is_on = False
+                self._connection.sound_enabled = False
+
+        self.async_on_remove(
+            async_dispatcher_connect(
+                self.hass,
+                sound_signal(self._key.lockMac),
+                self._on_sound_update,
+            )
+        )
+
+    @callback
+    def _on_sound_update(self, enabled: bool) -> None:
+        """Update state when sound setting changes."""
+        self._attr_is_on = enabled
+        if self.hass is not None:
+            self.async_write_ha_state()
+
     async def async_turn_on(self, **kwargs: Any) -> None:  # noqa: ARG002
         """Turn the beep on."""
         await self._async_set(enabled=True)
@@ -120,7 +126,8 @@ class TtlockBleSoundSwitch(TtlockBleEntity, SwitchEntity):
             msg = f"Failed to set the sound of {self._key.lockMac}: {exc}"
             raise HomeAssistantError(msg) from exc
         self._attr_is_on = enabled
-        self.async_write_ha_state()
+        if self.hass is not None:
+            self.async_write_ha_state()
 
 
 class TtlockBleAutoLockSwitch(TtlockBleEntity, SwitchEntity):
@@ -260,7 +267,9 @@ class TtlockBlePassageModeSwitch(TtlockBleEntity, SwitchEntity):
             end_minute=1,
         )
         try:
-            await self._connection.async_set_passage_mode([schedule], clear_existing=True)
+            await self._connection.async_set_passage_mode(
+                [schedule], clear_existing=True
+            )
         except TTLockError as exc:
             raise HomeAssistantError(
                 f"Failed to enable passage mode for {self._key.lockMac}: {exc}"

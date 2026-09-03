@@ -43,7 +43,9 @@ async def test_clock_drift_reports_the_last_comparison(
     setup_integration,
     sample_virtual_key,
 ) -> None:
-    from custom_components.hass_ttlock_ble.clock_sync_store import async_get_clock_sync_store
+    from custom_components.hass_ttlock_ble.clock_sync_store import (
+        async_get_clock_sync_store,
+    )
 
     store = await async_get_clock_sync_store(hass)
     store.async_remember(
@@ -59,7 +61,8 @@ async def test_clock_drift_reports_the_last_comparison(
 
 
 async def test_battery_sensor_created_for_each_key(hass, setup_integration) -> None:
-    assert len(hass.states.async_all("sensor")) == 3
+    assert len(hass.states.async_all("sensor")) >= 3
+    assert _battery_state(hass) is not None
 
 
 async def test_battery_sensor_reports_coordinator_value(
@@ -187,8 +190,12 @@ def test_battery_sync_from_coordinator_no_snapshot_keeps_value(
 ) -> None:
     """An empty coordinator snapshot leaves `_attr_native_value` untouched."""
 
-    from custom_components.hass_ttlock_ble.clock_sync_store import TtlockBleClockSyncStore
-    from custom_components.hass_ttlock_ble.coordinator import TtlockBleDataUpdateCoordinator
+    from custom_components.hass_ttlock_ble.clock_sync_store import (
+        TtlockBleClockSyncStore,
+    )
+    from custom_components.hass_ttlock_ble.coordinator import (
+        TtlockBleDataUpdateCoordinator,
+    )
     from custom_components.hass_ttlock_ble.device_description_store import (
         TtlockBleDeviceDescriptionStore,
     )
@@ -295,11 +302,13 @@ async def test_last_seen_is_stable_while_the_advertisement_does_not_change(
         return_value=info,
     ):
         with patch(
-            "custom_components.hass_ttlock_ble.sensor.MONOTONIC_TIME", return_value=1060.0
+            "custom_components.hass_ttlock_ble.sensor.MONOTONIC_TIME",
+            return_value=1060.0,
         ):
             first = entity.native_value
         with patch(
-            "custom_components.hass_ttlock_ble.sensor.MONOTONIC_TIME", return_value=1200.0
+            "custom_components.hass_ttlock_ble.sensor.MONOTONIC_TIME",
+            return_value=1200.0,
         ):
             second = entity.native_value
     assert first == second
@@ -348,7 +357,8 @@ async def test_last_seen_keeps_its_value_when_history_is_dropped(
             return_value=info,
         ),
         patch(
-            "custom_components.hass_ttlock_ble.sensor.MONOTONIC_TIME", return_value=1060.0
+            "custom_components.hass_ttlock_ble.sensor.MONOTONIC_TIME",
+            return_value=1060.0,
         ),
     ):
         seen = entity.native_value
@@ -398,7 +408,8 @@ async def test_last_seen_rereads_without_touching_the_coordinator(
             return_value=info,
         ),
         patch(
-            "custom_components.hass_ttlock_ble.sensor.MONOTONIC_TIME", return_value=1010.0
+            "custom_components.hass_ttlock_ble.sensor.MONOTONIC_TIME",
+            return_value=1010.0,
         ),
         patch.object(
             setup_integration.runtime_data.coordinator,

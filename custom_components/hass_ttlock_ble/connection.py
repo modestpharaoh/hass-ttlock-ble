@@ -17,12 +17,11 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import datetime as dt
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.bluetooth import async_ble_device_from_address
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util import dt as dt_util
-
 from ttlock_ble import TTLockClient, TTLockError
 
 from .const import DOMAIN, LOGGER
@@ -44,7 +43,6 @@ if TYPE_CHECKING:
 
     from bleak import BleakClient
     from homeassistant.core import HomeAssistant
-
     from ttlock_ble import DeviceInfo, LockEvent, LockState, LogEntry, VirtualKey
 
     from .data import TtlockBlePassageSchedule
@@ -92,6 +90,16 @@ def credentials_count_signal(mac: str) -> str:
     return f"{DOMAIN}_credentials_count_{mac.lower()}"
 
 
+def sound_signal(mac: str) -> str:
+    """Dispatcher signal that carries sound enable/disable changes for `mac`."""
+    return f"{DOMAIN}_sound_{mac.lower()}"
+
+
+def sound_volume_signal(mac: str) -> str:
+    """Dispatcher signal that carries sound volume changes for `mac`."""
+    return f"{DOMAIN}_sound_volume_{mac.lower()}"
+
+
 class TtlockBleConnection:
     """Maintain a long-lived BLE session with one TTLock lock."""
 
@@ -134,6 +142,8 @@ class TtlockBleConnection:
             "cards": None,
             "fingerprints": None,
         }
+        self._sound_volume: int | None = None
+        self._sound_enabled: bool | None = None
 
     @property
     def key(self) -> VirtualKey:
@@ -169,6 +179,26 @@ class TtlockBleConnection:
     def passage_schedules(self) -> list[TtlockBlePassageSchedule]:
         """Return cached passage mode schedule slots."""
         return self._passage_schedules
+
+    @property
+    def sound_volume(self) -> int | None:
+        """Return the last set sound volume level (1-5)."""
+        return self._sound_volume
+
+    @sound_volume.setter
+    def sound_volume(self, value: int | None) -> None:
+        """Update cached sound volume level."""
+        self._sound_volume = value
+
+    @property
+    def sound_enabled(self) -> bool | None:
+        """Return the last set sound state (True for on, False for off)."""
+        return self._sound_enabled
+
+    @sound_enabled.setter
+    def sound_enabled(self, value: bool | None) -> None:
+        """Update cached sound state."""
+        self._sound_enabled = value
 
     def get_credential_count(self, cred_type: str) -> int | None:
         """Return cached count for a credential type."""
@@ -344,6 +374,42 @@ class TtlockBleConnection:
     async def async_set_lock_sound(self, *, enabled: bool) -> None:
         """Turn the lock's beep on or off (raises on failure)."""
         await self._async_run_command("sound_on" if enabled else "sound_off")
+        self._sound_enabled = enabled
+        async_dispatcher_send(
+            self._hass,
+            sound_signal(self._key.lockMac),
+            enabled,
+        )
+
+    async def async_set_lock_volume(self, volume: int) -> None:
+        """Set the lock's beep volume (1-5, raises on failure)."""
+        if not 1 <= volume <= 5:
+            msg = f"Volume must be between 1 and 5, got {volume}"
+            raise ValueError(msg)
+        async with self._lock:
+            client = await self._async_ensure_connected_locked()
+            if client is None:
+                msg = f"Lock {self._key.lockMac} not reachable via Bluetooth"
+                raise TTLockError(msg)
+            try:
+                await client.set_lock_volume(volume)
+                self._sound_volume = volume
+                async_dispatcher_send(
+                    self._hass,
+                    sound_volume_signal(self._key.lockMac),
+                    volume,
+                )
+            except TTLockError:
+                await self._async_disconnect_locked()
+                raise
+            except TimeoutError as exc:
+                await self._async_disconnect_locked()
+                msg = f"Lock {self._key.lockMac} timed out setting volume"
+                raise TTLockError(msg) from exc
+            except Exception as exc:
+                await self._async_disconnect_locked()
+                msg = f"Lock {self._key.lockMac} failed to set volume: {exc}"
+                raise TTLockError(msg) from exc
 
     async def async_get_passage_mode(self) -> list[TtlockBlePassageSchedule]:
         """Fetch all passage mode schedule slots from the lock."""
@@ -499,15 +565,18 @@ class TtlockBleConnection:
                 highest_seen = max(self._seen_records)
                 target_start_record = max(0, highest_seen - max_entries + 1)
 
-            if target_start_record is not None:
-                seq = target_start_record
-            else:
-                seq = 0xFFFF
+            seq = target_start_record if target_start_record is not None else 0xFFFF
 
             # If filtering by to_sequence or date, fetch enough entries so filtering does not truncate
             if to_sequence is not None and target_start_record is not None:
-                fetch_count = max(max_entries, (to_sequence - target_start_record + 1)) + 5
-            elif to_sequence is not None or start_date is not None or end_date is not None:
+                fetch_count = (
+                    max(max_entries, (to_sequence - target_start_record + 1)) + 5
+                )
+            elif (
+                to_sequence is not None
+                or start_date is not None
+                or end_date is not None
+            ):
                 fetch_count = max_entries + 50
             else:
                 fetch_count = max_entries
@@ -546,7 +615,10 @@ class TtlockBleConnection:
             # Filter entries by sequence range and dates
             filtered: list[LogEntry] = []
             for entry in entries:
-                if target_start_record is not None and entry.record_number < target_start_record:
+                if (
+                    target_start_record is not None
+                    and entry.record_number < target_start_record
+                ):
                     continue
                 if to_sequence is not None and entry.record_number > to_sequence:
                     continue
@@ -554,7 +626,9 @@ class TtlockBleConnection:
                     if entry.operate_date is None:
                         continue
                     entry_dt = entry.operate_date.replace(tzinfo=None)
-                    if dt_start is not None and entry_dt < dt_start.replace(tzinfo=None):
+                    if dt_start is not None and entry_dt < dt_start.replace(
+                        tzinfo=None
+                    ):
                         continue
                     if dt_end is not None and entry_dt > dt_end.replace(tzinfo=None):
                         continue
@@ -571,20 +645,22 @@ class TtlockBleConnection:
                 rec_type_name = (
                     rec_type.name if hasattr(rec_type, "name") else str(rec_type)
                 )
-                results.append({
-                    "record_number": entry.record_number,
-                    "record_type": rec_type_name,
-                    "operate_date": (
-                        entry.operate_date.isoformat()
-                        if entry.operate_date
-                        else None
-                    ),
-                    "lock_battery": entry.lock_battery,
-                    "uid": entry.uid,
-                    "record_id": entry.record_id,
-                    "credential": entry.password,
-                    "key_id": entry.key_id,
-                })
+                results.append(
+                    {
+                        "record_number": entry.record_number,
+                        "record_type": rec_type_name,
+                        "operate_date": (
+                            entry.operate_date.isoformat()
+                            if entry.operate_date
+                            else None
+                        ),
+                        "lock_battery": entry.lock_battery,
+                        "uid": entry.uid,
+                        "record_id": entry.record_id,
+                        "credential": entry.password,
+                        "key_id": entry.key_id,
+                    }
+                )
             return results
 
     async def async_get_passcodes(self) -> list[dict[str, Any]]:

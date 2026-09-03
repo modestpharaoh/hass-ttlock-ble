@@ -3,21 +3,22 @@
 from __future__ import annotations
 
 import datetime as dt
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
+import voluptuous as vol
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.core import SupportsResponse
+from homeassistant.core import ServiceResponse, SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.device_registry import (
     async_get as async_get_device_registry,
+)
+from homeassistant.helpers.device_registry import (
     format_mac,
 )
 from homeassistant.helpers.entity_registry import (
     async_get as async_get_entity_registry,
 )
-import voluptuous as vol
-
 from ttlock_ble import TTLockError
 
 from .const import (
@@ -32,6 +33,7 @@ from .const import (
     SERVICE_GET_OPERATION_LOG,
     SERVICE_GET_PASSAGE_MODE,
     SERVICE_GET_PASSCODES,
+    SERVICE_SET_LOCK_VOLUME,
     SERVICE_SET_PASSAGE_MODE,
 )
 from .passage import PASSAGE_TYPE_WEEKLY
@@ -42,7 +44,6 @@ if TYPE_CHECKING:
     from homeassistant.core import (
         HomeAssistant,
         ServiceCall,
-        ServiceResponse,
     )
 
     from .connection import TtlockBleConnection
@@ -80,7 +81,7 @@ DAY_INDEX_TO_NAME: dict[int, str] = {
     7: "sunday",
 }
 
-SCHEMA_BASE_TARGET = {
+SCHEMA_BASE_TARGET: dict[Any, Any] = {
     vol.Optional("device_id"): vol.Any(cv.string, [cv.string]),
     vol.Optional("entity_id"): vol.Any(cv.string, [cv.string]),
 }
@@ -120,6 +121,16 @@ SCHEMA_DELETE_PASSAGE_MODE = vol.Schema(
         vol.Required("end_time"): cv.string,
         vol.Optional("days"): vol.Any(cv.string, int),
         vol.Optional("week_or_day"): vol.Any(cv.string, int),
+    }
+)
+
+SCHEMA_SET_LOCK_VOLUME = vol.Schema(
+    {
+        **SCHEMA_BASE_TARGET,
+        vol.Required("volume"): vol.All(
+            vol.Coerce(int),
+            vol.Range(min=1, max=5),
+        ),
     }
 )
 
@@ -273,32 +284,34 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     async def async_handle_get_passage_mode(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_passage_mode."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 schedules = await conn.async_get_passage_mode()
                 for slot in schedules:
-                    results.append({
-                        "lock_mac": conn.key.lockMac,
-                        "week_or_day": slot["week_or_day"],
-                        "day_name": DAY_INDEX_TO_NAME.get(
-                            slot["week_or_day"],
-                            "everyday",
-                        ),
-                        "start_time": (
-                            f"{slot['start_hour']:02d}:{slot['start_minute']:02d}"
-                        ),
-                        "end_time": (
-                            f"{slot['end_hour']:02d}:{slot['end_minute']:02d}"
-                        ),
-                        "type": slot["type"],
-                        "month": slot["month"],
-                    })
+                    results.append(
+                        {
+                            "lock_mac": conn.key.lockMac,
+                            "week_or_day": slot["week_or_day"],
+                            "day_name": DAY_INDEX_TO_NAME.get(
+                                slot["week_or_day"],
+                                "everyday",
+                            ),
+                            "start_time": (
+                                f"{slot['start_hour']:02d}:{slot['start_minute']:02d}"
+                            ),
+                            "end_time": (
+                                f"{slot['end_hour']:02d}:{slot['end_minute']:02d}"
+                            ),
+                            "type": slot["type"],
+                            "month": slot["month"],
+                        }
+                    )
             except TTLockError as exc:
                 raise HomeAssistantError(
                     f"Failed to query passage mode for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"schedules": results}
+        return cast(ServiceResponse, {"schedules": results})
 
     async def async_handle_set_passage_mode(call: ServiceCall) -> None:
         """Handle hass_ttlock_ble.set_passage_mode."""
@@ -343,7 +356,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     async def async_handle_get_auto_lock_time(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_auto_lock_time."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 info = await conn.async_get_auto_lock_info()
@@ -352,12 +365,12 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get auto-lock time for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"auto_lock": results}
+        return cast(ServiceResponse, {"auto_lock": results})
 
     async def async_handle_get_lock_time(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_lock_time."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 clock_info = await conn.async_get_lock_clock()
@@ -366,7 +379,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get clock time for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"lock_times": results}
+        return cast(ServiceResponse, {"lock_times": results})
 
     async def async_handle_get_operation_log(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_operation_log."""
@@ -378,7 +391,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         to_seq_int = int(to_sequence) if to_sequence is not None else None
         start_date = call.data.get("start_date")
         end_date = call.data.get("end_date")
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 records = await conn.async_fetch_operation_log(
@@ -394,12 +407,12 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get operation log for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"records": results}
+        return cast(ServiceResponse, {"records": results})
 
     async def async_handle_get_passcodes(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_passcodes."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 codes = await conn.async_get_passcodes()
@@ -409,12 +422,12 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get passcodes for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"passcodes": results}
+        return cast(ServiceResponse, {"passcodes": results})
 
     async def async_handle_get_cards(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_cards."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 cards = await conn.async_get_cards()
@@ -424,12 +437,12 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get cards for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"cards": results}
+        return cast(ServiceResponse, {"cards": results})
 
     async def async_handle_get_fingerprints(call: ServiceCall) -> ServiceResponse:
         """Handle hass_ttlock_ble.get_fingerprints."""
         connections = _async_resolve_connections(hass, call)
-        results: list[dict[str, object]] = []
+        results: list[dict[str, Any]] = []
         for conn in connections:
             try:
                 fps = await conn.async_get_fingerprints()
@@ -439,7 +452,19 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 raise HomeAssistantError(
                     f"Failed to get fingerprints for {conn.key.lockMac}: {exc}"
                 ) from exc
-        return {"fingerprints": results}
+        return cast(ServiceResponse, {"fingerprints": results})
+
+    async def async_handle_set_lock_volume(call: ServiceCall) -> None:
+        """Handle hass_ttlock_ble.set_lock_volume."""
+        connections = _async_resolve_connections(hass, call)
+        volume = int(call.data["volume"])
+        for conn in connections:
+            try:
+                await conn.async_set_lock_volume(volume)
+            except Exception as exc:
+                raise HomeAssistantError(
+                    f"Failed to set sound volume for {conn.key.lockMac}: {exc}"
+                ) from exc
 
     hass.services.async_register(
         DOMAIN,
@@ -508,6 +533,12 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         schema=SCHEMA_GET_PASSAGE_MODE,
         supports_response=SupportsResponse.OPTIONAL,
     )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SET_LOCK_VOLUME,
+        async_handle_set_lock_volume,
+        schema=SCHEMA_SET_LOCK_VOLUME,
+    )
     LOGGER.debug("Registered TTLock BLE services")
 
 
@@ -529,4 +560,5 @@ async def async_unload_services(hass: HomeAssistant) -> None:
     hass.services.async_remove(DOMAIN, SERVICE_GET_PASSCODES)
     hass.services.async_remove(DOMAIN, SERVICE_GET_CARDS)
     hass.services.async_remove(DOMAIN, SERVICE_GET_FINGERPRINTS)
+    hass.services.async_remove(DOMAIN, SERVICE_SET_LOCK_VOLUME)
     LOGGER.debug("Unregistered TTLock BLE services")

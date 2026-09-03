@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from datetime import datetime, time, timedelta
 from typing import TYPE_CHECKING, Any
 
@@ -10,7 +11,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
 )
 from homeassistant.const import EntityCategory
-from homeassistant.core import callback
+from homeassistant.core import CALLBACK_TYPE, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.event import async_track_point_in_time
 from homeassistant.helpers.restore_state import RestoreEntity
@@ -22,6 +23,7 @@ from .entity import TtlockBleEntity
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
+    from ttlock_ble import VirtualKey
 
     from .connection import TtlockBleConnection
     from .coordinator import TtlockBleDataUpdateCoordinator
@@ -40,7 +42,7 @@ DAY_NAMES = {
 
 
 def is_passage_mode_active(
-    schedules: list[dict[str, Any]],
+    schedules: Sequence[Mapping[str, Any]],
     now: datetime,
 ) -> bool:
     """Return True if current wall-clock time is inside any passage mode schedule."""
@@ -79,7 +81,7 @@ def is_passage_mode_active(
 
 
 def get_next_passage_mode_transition(
-    schedules: list[dict[str, Any]],
+    schedules: Sequence[Mapping[str, Any]],
     now: datetime,
 ) -> datetime | None:
     """Calculate the exact next transition timestamp (start or end of a slot)."""
@@ -97,9 +99,7 @@ def get_next_passage_mode_transition(
             day_match = False
             if st_type == 1:
                 w_day = slot.get("week_or_day")
-                day_match = (
-                    w_day == 0 or w_day == "everyday" or w_day == target_weekday
-                )
+                day_match = w_day == 0 or w_day == "everyday" or w_day == target_weekday
             elif st_type == 2:
                 day_match = (
                     slot.get("month") == target_date.month
@@ -134,22 +134,24 @@ def get_next_passage_mode_transition(
 
 
 def format_schedules_attribute(
-    schedules: list[dict[str, Any]],
+    schedules: Sequence[Mapping[str, Any]],
 ) -> list[dict[str, Any]]:
     """Format schedule slots for human-readable state attributes."""
     formatted = []
     for s in schedules:
         week_or_day = s.get("week_or_day", 1)
-        formatted.append({
-            "type": "weekly" if s.get("type") == 1 else "monthly",
-            "day": (
-                DAY_NAMES.get(week_or_day, str(week_or_day))
-                if s.get("type") == 1
-                else week_or_day
-            ),
-            "start_time": f"{s.get('start_hour', 0):02d}:{s.get('start_minute', 0):02d}",
-            "end_time": f"{s.get('end_hour', 0):02d}:{s.get('end_minute', 0):02d}",
-        })
+        formatted.append(
+            {
+                "type": "weekly" if s.get("type") == 1 else "monthly",
+                "day": (
+                    DAY_NAMES.get(week_or_day, str(week_or_day))
+                    if s.get("type") == 1
+                    else week_or_day
+                ),
+                "start_time": f"{s.get('start_hour', 0):02d}:{s.get('start_minute', 0):02d}",
+                "end_time": f"{s.get('end_hour', 0):02d}:{s.get('end_minute', 0):02d}",
+            }
+        )
     return formatted
 
 
@@ -158,13 +160,13 @@ async def async_setup_entry(
     entry: TtlockBleConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Create binary sensors for each VirtualKey."""
+    """Create binary sensors per lock."""
     data = entry.runtime_data
     entities: list[BinarySensorEntity] = []
 
     for key in data.virtual_keys:
         conn = data.connections[key.lockMac]
-        entities.append(TtlockBleConnectionBinarySensor(data.coordinator, key))
+        entities.append(TtlockBleConnectionBinarySensor(data.coordinator, key, conn))
         entities.append(
             TtlockBlePassageModeActiveBinarySensor(data.coordinator, key, conn)
         )
@@ -173,47 +175,56 @@ async def async_setup_entry(
 
 
 class TtlockBleConnectionBinarySensor(TtlockBleEntity, BinarySensorEntity):
-    """Reports the live BLE link state for one lock."""
+    """
+    Reflects the live BLE session state of a single lock.
 
-    _attr_translation_key = "connection"
+    `is_on == True` means an authenticated BLE link is open right now.
+    """
+
     _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
     _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "connection"
+
+    def __init__(
+        self,
+        coordinator: TtlockBleDataUpdateCoordinator,
+        key: VirtualKey,
+        connection: TtlockBleConnection,
+    ) -> None:
+        """Bind to coordinator, key and connection."""
+        super().__init__(coordinator, key)
+        self._connection = connection
 
     @property
     def unique_id(self) -> str:
-        """Return a stable unique id for this entity."""
+        """Return a stable unique id."""
         return f"{self._key.lockMac}_connection"
 
     @property
     def is_on(self) -> bool:
-        """True iff the persistent BLE session to this lock is currently up."""
+        """True iff the connection has an open BLE session."""
         return self._connection.is_connected
 
     @property
     def icon(self) -> str:
-        """Bluetooth icon that mirrors the live link state."""
+        """Icon switches between bluetooth-connect and bluetooth-off."""
         return "mdi:bluetooth-connect" if self.is_on else "mdi:bluetooth-off"
 
     async def async_added_to_hass(self) -> None:
-        """Subscribe to live BLE connect/disconnect transitions."""
+        """Subscribe to connection state changes."""
         await super().async_added_to_hass()
         self.async_on_remove(
             async_dispatcher_connect(
                 self.hass,
                 connection_signal(self._key.lockMac),
-                self._on_connection_state,
-            ),
+                self._on_connection_change,
+            )
         )
 
     @callback
-    def _on_connection_state(self, _connected: bool) -> None:  # noqa: FBT001
-        """Push the freshest BLE link state into HA's state machine."""
+    def _on_connection_change(self, is_connected: bool) -> None:  # noqa: ARG002
+        """Handle connection state change."""
         self.async_write_ha_state()
-
-    @property
-    def _connection(self) -> TtlockBleConnection:
-        """Return the persistent BLE connection wrapper for this lock."""
-        return self.coordinator.connections[self._key.lockMac]
 
 
 class TtlockBlePassageModeActiveBinarySensor(
@@ -235,8 +246,10 @@ class TtlockBlePassageModeActiveBinarySensor(
         """Bind entity to coordinator, key, and connection."""
         super().__init__(coordinator, key)
         self._connection = connection
-        self._schedules: list[dict[str, Any]] = list(connection.passage_schedules)
-        self._unsub_transition: callback | None = None
+        self._schedules: list[dict[str, Any]] = [
+            dict(s) for s in connection.passage_schedules
+        ]
+        self._unsub_transition: CALLBACK_TYPE | None = None
 
     @property
     def unique_id(self) -> str:
@@ -291,9 +304,9 @@ class TtlockBlePassageModeActiveBinarySensor(
     def _on_passage_mode_update(self, schedules_or_active: Any) -> None:
         """Update schedules from dispatcher signal."""
         if isinstance(schedules_or_active, list):
-            self._schedules = list(schedules_or_active)
+            self._schedules = [dict(s) for s in schedules_or_active]
         elif self._connection.passage_schedules:
-            self._schedules = list(self._connection.passage_schedules)
+            self._schedules = [dict(s) for s in self._connection.passage_schedules]
         self.async_write_ha_state()
         self._schedule_next_transition()
 

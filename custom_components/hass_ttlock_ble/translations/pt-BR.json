@@ -173,6 +173,9 @@
     "number": {
       "auto_lock_time": {
         "name": "Tempo de travamento automático"
+      },
+      "sound_volume": {
+        "name": "Volume do som"
       }
     },
     "sensor": {

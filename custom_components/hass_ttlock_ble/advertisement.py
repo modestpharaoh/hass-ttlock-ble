@@ -12,7 +12,6 @@ from homeassistant.components.bluetooth import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import format_mac
-
 from ttlock_ble import LockAdvertisement
 
 from .const import LOGGER
@@ -25,7 +24,6 @@ if TYPE_CHECKING:
         BluetoothServiceInfoBleak,
     )
     from homeassistant.core import CALLBACK_TYPE, HomeAssistant
-
     from ttlock_ble import VirtualKey
 
     from .coordinator import TtlockBleDataUpdateCoordinator

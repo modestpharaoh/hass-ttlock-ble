@@ -6,13 +6,16 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.exceptions import HomeAssistantError
+from ttlock_ble import TTLockError
 
-from custom_components.hass_ttlock_ble.number import TtlockBleAutoLockTimeNumber
+from custom_components.hass_ttlock_ble.number import (
+    TtlockBleAutoLockTimeNumber,
+    TtlockBleSoundVolumeNumber,
+)
 from custom_components.hass_ttlock_ble.switch import (
     TtlockBleAutoLockSwitch,
     TtlockBlePassageModeSwitch,
 )
-from ttlock_ble import TTLockError
 
 
 @pytest.mark.asyncio
@@ -106,3 +109,51 @@ async def test_passage_mode_switch_entity() -> None:
     connection.async_clear_passage_mode.side_effect = TTLockError("BLE drop")
     with pytest.raises(HomeAssistantError):
         await switch.async_turn_off()
+
+
+@pytest.mark.asyncio
+async def test_sound_volume_number_entity() -> None:
+    """Test sound volume number entity."""
+    coordinator = MagicMock()
+    key = MagicMock()
+    key.lockMac = "AA:BB:CC:DD:EE:FF"
+    connection = MagicMock()
+    connection.sound_volume = 3
+    connection.async_set_lock_volume = AsyncMock()
+
+    number = TtlockBleSoundVolumeNumber(coordinator, key, connection)
+    assert number.unique_id == "AA:BB:CC:DD:EE:FF_sound_volume"
+    assert number.native_value == 3.0
+    assert number.native_min_value == 1.0
+    assert number.native_max_value == 5.0
+
+    await number.async_set_native_value(4.0)
+    connection.async_set_lock_volume.assert_awaited_once_with(4)
+    assert number.native_value == 4.0
+
+    # Test error handling
+    connection.async_set_lock_volume.side_effect = TTLockError("BLE drop")
+    with pytest.raises(HomeAssistantError):
+        await number.async_set_native_value(5.0)
+
+
+@pytest.mark.asyncio
+async def test_sound_volume_restore_state() -> None:
+    """Test sound volume restores state on added to hass."""
+    from homeassistant.core import State
+
+    coordinator = MagicMock()
+    key = MagicMock()
+    key.lockMac = "AA:BB:CC:DD:EE:FF"
+    connection = MagicMock()
+    connection.sound_volume = None
+
+    number = TtlockBleSoundVolumeNumber(coordinator, key, connection)
+    number.async_get_last_state = AsyncMock(
+        return_value=State("number.front_door_sound_volume", "4.0")
+    )
+    number.hass = MagicMock()
+
+    await number.async_added_to_hass()
+    assert number.native_value == 4.0
+    assert connection.sound_volume == 4

@@ -6,7 +6,6 @@ import re
 from typing import TYPE_CHECKING
 
 from homeassistant.components.bluetooth import async_last_service_info
-
 from ttlock_ble import LockVersion, VirtualKey
 
 from .advertisement import decode_lock_advertisement
@@ -14,7 +13,6 @@ from .const import LOGGER
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
-
     from ttlock_ble import LockAdvertisement
 
     from .data import TtlockBleManualKeyInput, TtlockBleStoredKey
@@ -92,6 +90,7 @@ class TtlockBleManualKey:
             unlockKey=user_input["unlock_key"].strip(),
             lockFlagPos=0,
             timezoneRawOffSet=0,
+            userType="110301",
             adminPs=(user_input.get("admin_passcode") or "").strip(),
         )
 

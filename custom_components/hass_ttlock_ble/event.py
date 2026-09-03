@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 from homeassistant.components.event import EventEntity
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-
 from ttlock_ble import LogOperate
 
 from .connection import log_signal
@@ -22,7 +21,6 @@ from .entity import TtlockBleEntity
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
     from ttlock_ble import LogEntry
 
     from .data import TtlockBleConfigEntry, TtlockBleLogEventAttributes

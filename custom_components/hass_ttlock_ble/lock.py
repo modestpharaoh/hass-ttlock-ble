@@ -10,7 +10,6 @@ from homeassistant.components.lock import LockEntity
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-
 from ttlock_ble import LockState, TTLockError
 
 from .connection import event_signal
@@ -22,7 +21,6 @@ if TYPE_CHECKING:
 
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
     from ttlock_ble import LockEvent, VirtualKey
 
     from .connection import TtlockBleConnection

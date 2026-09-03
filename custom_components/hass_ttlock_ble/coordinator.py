@@ -27,7 +27,6 @@ from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.typing import UNDEFINED
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
-
 from ttlock_ble import LockState, TTLockError
 
 from .const import DOMAIN, LOGGER
@@ -36,7 +35,6 @@ if TYPE_CHECKING:
     from datetime import datetime
 
     from homeassistant.core import CALLBACK_TYPE, HomeAssistant
-
     from ttlock_ble import LockAdvertisement
 
     from .clock_sync_store import TtlockBleClockSyncStore
@@ -189,7 +187,10 @@ class TtlockBleDataUpdateCoordinator(DataUpdateCoordinator["TtlockBleCoordinator
         prev_data = current_data.get(mac, {})
         if data.get("locked") is None and prev_data.get("locked") is not None:
             data["locked"] = prev_data["locked"]
-        if data.get("battery_level") is None and prev_data.get("battery_level") is not None:
+        if (
+            data.get("battery_level") is None
+            and prev_data.get("battery_level") is not None
+        ):
             data["battery_level"] = prev_data["battery_level"]
         current_data[mac] = data
         self.async_set_updated_data(current_data)

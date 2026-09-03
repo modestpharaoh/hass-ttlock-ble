@@ -32,15 +32,17 @@ def test_is_passage_mode_active() -> None:
     assert not is_passage_mode_active([], mon_10am)
 
     # Weekly Monday 08:00 to 17:00
-    schedules = [{
-        "type": 1,
-        "week_or_day": 1,
-        "month": 0,
-        "start_hour": 8,
-        "start_minute": 0,
-        "end_hour": 17,
-        "end_minute": 0,
-    }]
+    schedules = [
+        {
+            "type": 1,
+            "week_or_day": 1,
+            "month": 0,
+            "start_hour": 8,
+            "start_minute": 0,
+            "end_hour": 17,
+            "end_minute": 0,
+        }
+    ]
 
     assert is_passage_mode_active(schedules, mon_10am)
     assert not is_passage_mode_active(schedules, mon_07am)
@@ -51,15 +53,17 @@ def test_is_passage_mode_active() -> None:
 def test_get_next_passage_mode_transition() -> None:
     """Test calculating exact next transition point without polling."""
     # Monday 2026-09-07
-    schedules = [{
-        "type": 1,
-        "week_or_day": 1,
-        "month": 0,
-        "start_hour": 8,
-        "start_minute": 0,
-        "end_hour": 17,
-        "end_minute": 0,
-    }]
+    schedules = [
+        {
+            "type": 1,
+            "week_or_day": 1,
+            "month": 0,
+            "start_hour": 8,
+            "start_minute": 0,
+            "end_hour": 17,
+            "end_minute": 0,
+        }
+    ]
 
     # Before start -> next transition is 08:00 today
     now = dt.datetime(2026, 9, 7, 7, 30, 0)
@@ -88,10 +92,38 @@ def test_format_passage_mode_status() -> None:
 
     # Friday slot + Everyday (0) slots like user's exact schedule
     schedules = [
-        {"type": 1, "week_or_day": 5, "start_hour": 13, "start_minute": 0, "end_hour": 15, "end_minute": 0},  # Fri
-        {"type": 1, "week_or_day": 0, "start_hour": 5, "start_minute": 0, "end_hour": 6, "end_minute": 0},    # Everyday 05:00
-        {"type": 1, "week_or_day": 0, "start_hour": 13, "start_minute": 15, "end_hour": 14, "end_minute": 0}, # Everyday 13:15
-        {"type": 1, "week_or_day": 0, "start_hour": 16, "start_minute": 25, "end_hour": 17, "end_minute": 15}, # Everyday 16:25
+        {
+            "type": 1,
+            "week_or_day": 5,
+            "start_hour": 13,
+            "start_minute": 0,
+            "end_hour": 15,
+            "end_minute": 0,
+        },  # Fri
+        {
+            "type": 1,
+            "week_or_day": 0,
+            "start_hour": 5,
+            "start_minute": 0,
+            "end_hour": 6,
+            "end_minute": 0,
+        },  # Everyday 05:00
+        {
+            "type": 1,
+            "week_or_day": 0,
+            "start_hour": 13,
+            "start_minute": 15,
+            "end_hour": 14,
+            "end_minute": 0,
+        },  # Everyday 13:15
+        {
+            "type": 1,
+            "week_or_day": 0,
+            "start_hour": 16,
+            "start_minute": 25,
+            "end_hour": 17,
+            "end_minute": 15,
+        },  # Everyday 16:25
     ]
 
     # At 12:05 on Wednesday -> next is Today 13:15
@@ -109,9 +141,30 @@ def test_get_passage_schedule_attributes() -> None:
     # Wednesday 2026-09-09 13:30
     wed_1330 = dt.datetime(2026, 9, 9, 13, 30, 0)
     schedules = [
-        {"type": 1, "week_or_day": 3, "start_hour": 5, "start_minute": 0, "end_hour": 6, "end_minute": 0},
-        {"type": 1, "week_or_day": 3, "start_hour": 13, "start_minute": 15, "end_hour": 14, "end_minute": 0},
-        {"type": 1, "week_or_day": 5, "start_hour": 13, "start_minute": 0, "end_hour": 15, "end_minute": 0},
+        {
+            "type": 1,
+            "week_or_day": 3,
+            "start_hour": 5,
+            "start_minute": 0,
+            "end_hour": 6,
+            "end_minute": 0,
+        },
+        {
+            "type": 1,
+            "week_or_day": 3,
+            "start_hour": 13,
+            "start_minute": 15,
+            "end_hour": 14,
+            "end_minute": 0,
+        },
+        {
+            "type": 1,
+            "week_or_day": 5,
+            "start_hour": 13,
+            "start_minute": 0,
+            "end_hour": 15,
+            "end_minute": 0,
+        },
     ]
     attrs = get_passage_schedule_attributes(schedules, wed_1330)
     assert attrs["today_slots"] == ["05:00-06:00", "13:15-14:00"]
@@ -127,15 +180,17 @@ async def test_passage_mode_entities() -> None:
     key.lockMac = "AA:BB:CC:DD:EE:FF"
 
     connection = MagicMock()
-    connection.passage_schedules = [{
-        "type": 1,
-        "week_or_day": 1,
-        "month": 0,
-        "start_hour": 0,
-        "start_minute": 0,
-        "end_hour": 0,
-        "end_minute": 1,
-    }]
+    connection.passage_schedules = [
+        {
+            "type": 1,
+            "week_or_day": 1,
+            "month": 0,
+            "start_hour": 0,
+            "start_minute": 0,
+            "end_hour": 0,
+            "end_minute": 1,
+        }
+    ]
     connection.async_get_passage_mode = AsyncMock(return_value=[])
 
     # Binary sensor

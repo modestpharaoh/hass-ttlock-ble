@@ -36,7 +36,8 @@ def build_passcodes_query_payload(sequence: int = 0) -> bytes:
 def parse_passcodes_query_response(
     data: bytes,
 ) -> tuple[int, list[dict[str, Any]]]:
-    """Parse payload from a COMM_PWD_LIST response.
+    """
+    Parse payload from a COMM_PWD_LIST response.
 
     Returns (next_sequence, passcodes).
     """
@@ -91,14 +92,16 @@ def parse_passcodes_query_response(
         elif pwd_type == 4 and index + 2 <= len(data):
             index += 2
 
-        passcodes.append({
-            "passcode": pwd,
-            "new_passcode": new_pwd if new_pwd != pwd else "",
-            "type": pwd_type,
-            "type_name": PASSCODE_TYPE_NAMES.get(pwd_type, "unknown"),
-            "start_date": start_date,
-            "end_date": end_date,
-        })
+        passcodes.append(
+            {
+                "passcode": pwd,
+                "new_passcode": new_pwd if new_pwd != pwd else "",
+                "type": pwd_type,
+                "type_name": PASSCODE_TYPE_NAMES.get(pwd_type, "unknown"),
+                "start_date": start_date,
+                "end_date": end_date,
+            }
+        )
 
     return max(0, next_sequence), passcodes
 
@@ -111,7 +114,8 @@ def build_ic_cards_query_payload(sequence: int = 0) -> bytes:
 def parse_ic_cards_query_response(
     data: bytes,
 ) -> tuple[int, list[dict[str, Any]]]:
-    """Parse payload from a COMM_IC_MANAGE search response.
+    """
+    Parse payload from a COMM_IC_MANAGE search response.
 
     Returns (next_sequence, cards).
     Layout:
@@ -148,11 +152,13 @@ def parse_ic_cards_query_response(
         )
         index += 5
 
-        cards.append({
-            "card_number": str(card_num),
-            "start_date": start_date,
-            "end_date": end_date,
-        })
+        cards.append(
+            {
+                "card_number": str(card_num),
+                "start_date": start_date,
+                "end_date": end_date,
+            }
+        )
 
     return max(0, next_sequence), cards
 
@@ -165,7 +171,8 @@ def build_fingerprints_query_payload(sequence: int = 0) -> bytes:
 def parse_fingerprints_query_response(
     data: bytes,
 ) -> tuple[int, list[dict[str, Any]]]:
-    """Parse payload from a COMM_FR_MANAGE search response.
+    """
+    Parse payload from a COMM_FR_MANAGE search response.
 
     Returns (next_sequence, fingerprints).
     Layout:
@@ -198,11 +205,13 @@ def parse_fingerprints_query_response(
         )
         index += 5
 
-        fingerprints.append({
-            "fingerprint_id": str(fp_num),
-            "start_date": start_date,
-            "end_date": end_date,
-        })
+        fingerprints.append(
+            {
+                "fingerprint_id": str(fp_num),
+                "start_date": start_date,
+                "end_date": end_date,
+            }
+        )
 
     return max(0, next_sequence), fingerprints
 
@@ -277,9 +286,7 @@ async def async_client_get_ic_cards(
                     status,
                 )
                 return []
-            raise TTLockError(
-                f"Failed to get_cards: lock returned status {status:#x}"
-            )
+            raise TTLockError(f"Failed to get_cards: lock returned status {status:#x}")
         next_seq, cards = parse_ic_cards_query_response(data)
         all_cards.extend(cards)
         if next_seq == 0 or next_seq == sequence or not cards:

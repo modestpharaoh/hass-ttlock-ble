@@ -6,7 +6,10 @@ from pathlib import Path
 import pytest
 
 TRANSLATIONS_DIR = (
-    Path(__file__).parent.parent / "custom_components" / "hass_ttlock_ble" / "translations"
+    Path(__file__).parent.parent
+    / "custom_components"
+    / "hass_ttlock_ble"
+    / "translations"
 )
 
 

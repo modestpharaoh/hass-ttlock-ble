@@ -53,16 +53,18 @@ def build_passage_set_payload(schedule: TtlockBlePassageSchedule) -> bytes:
     if not (0 <= week_or_day <= 7):
         raise ValueError(f"Invalid week_or_day: {week_or_day}")
 
-    return bytes([
-        PASSAGE_MODE_ADD,
-        recurrence_type & 0xFF,
-        week_or_day & 0xFF,
-        month & 0xFF,
-        start_hour & 0xFF,
-        start_minute & 0xFF,
-        end_hour & 0xFF,
-        end_minute & 0xFF,
-    ])
+    return bytes(
+        [
+            PASSAGE_MODE_ADD,
+            recurrence_type & 0xFF,
+            week_or_day & 0xFF,
+            month & 0xFF,
+            start_hour & 0xFF,
+            start_minute & 0xFF,
+            end_hour & 0xFF,
+            end_minute & 0xFF,
+        ]
+    )
 
 
 def build_passage_delete_payload(schedule: TtlockBlePassageSchedule) -> bytes:
@@ -75,22 +77,25 @@ def build_passage_delete_payload(schedule: TtlockBlePassageSchedule) -> bytes:
     recurrence_type = schedule.get("type", PASSAGE_TYPE_WEEKLY)
     month = schedule.get("month", 0)
 
-    return bytes([
-        PASSAGE_MODE_DELETE,
-        recurrence_type & 0xFF,
-        week_or_day & 0xFF,
-        month & 0xFF,
-        start_hour & 0xFF,
-        start_minute & 0xFF,
-        end_hour & 0xFF,
-        end_minute & 0xFF,
-    ])
+    return bytes(
+        [
+            PASSAGE_MODE_DELETE,
+            recurrence_type & 0xFF,
+            week_or_day & 0xFF,
+            month & 0xFF,
+            start_hour & 0xFF,
+            start_minute & 0xFF,
+            end_hour & 0xFF,
+            end_minute & 0xFF,
+        ]
+    )
 
 
 def parse_passage_query_response(
     data: bytes,
 ) -> tuple[int, list[TtlockBlePassageSchedule]]:
-    """Parse raw payload from a query passage mode response into schedule slots.
+    """
+    Parse raw payload from a query passage mode response into schedule slots.
 
     Payload layout (after the response envelope):
       data[0]: battery percentage

@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from homeassistant.components.button import ButtonEntity
 from homeassistant.const import EntityCategory
 from homeassistant.exceptions import HomeAssistantError
-
 from ttlock_ble import TTLockError
 
 from .entity import TtlockBleEntity
@@ -15,7 +14,6 @@ from .entity import TtlockBleEntity
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
     from ttlock_ble import VirtualKey
 
     from .connection import TtlockBleConnection
@@ -34,21 +32,11 @@ async def async_setup_entry(
 
     for key in data.virtual_keys:
         connection = data.connections[key.lockMac]
-        entities.append(
-            TtlockBleSyncClockButton(data.coordinator, key, connection)
-        )
-        entities.append(
-            TtlockBleSyncLogButton(data.coordinator, key, connection)
-        )
-        entities.append(
-            TtlockBleRefreshStateButton(data.coordinator, key, connection)
-        )
-        entities.append(
-            TtlockBleSyncPasscodesButton(data.coordinator, key, connection)
-        )
-        entities.append(
-            TtlockBleSyncCardsButton(data.coordinator, key, connection)
-        )
+        entities.append(TtlockBleSyncClockButton(data.coordinator, key, connection))
+        entities.append(TtlockBleSyncLogButton(data.coordinator, key, connection))
+        entities.append(TtlockBleRefreshStateButton(data.coordinator, key, connection))
+        entities.append(TtlockBleSyncPasscodesButton(data.coordinator, key, connection))
+        entities.append(TtlockBleSyncCardsButton(data.coordinator, key, connection))
         entities.append(
             TtlockBleSyncFingerprintsButton(data.coordinator, key, connection)
         )
