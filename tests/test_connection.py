@@ -25,13 +25,15 @@ def _log_entry(record_number: int) -> SimpleNamespace:
 
 
 def test_event_signal_lowercases_mac() -> None:
-    assert event_signal("AA:BB:CC:DD:EE:FF") == "ttlock_ble_event_aa:bb:cc:dd:ee:ff"
+    assert (
+        event_signal("AA:BB:CC:DD:EE:FF") == "hass_ttlock_ble_event_aa:bb:cc:dd:ee:ff"
+    )
 
 
 def test_connection_signal_lowercases_mac() -> None:
     assert (
         connection_signal("AA:BB:CC:DD:EE:FF")
-        == "ttlock_ble_connection_aa:bb:cc:dd:ee:ff"
+        == "hass_ttlock_ble_connection_aa:bb:cc:dd:ee:ff"
     )
 
 

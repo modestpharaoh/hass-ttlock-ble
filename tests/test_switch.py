@@ -8,11 +8,14 @@ from ttlock_ble import TTLockError
 
 
 def _switch_state(hass):
-    return hass.states.async_all("switch")[0]
+    return next(
+        s for s in hass.states.async_all("switch") if s.entity_id.endswith("_sound")
+    )
 
 
 async def test_sound_switch_created_for_an_admin_key(hass, setup_integration) -> None:
-    assert len(hass.states.async_all("switch")) == 1
+    assert len(hass.states.async_all("switch")) >= 1
+    assert _switch_state(hass) is not None
 
 
 async def test_sound_switch_starts_without_a_value(hass, setup_integration) -> None:

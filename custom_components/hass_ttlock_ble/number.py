@@ -189,14 +189,16 @@ class TtlockBleSoundVolumeNumber(TtlockBleEntity, NumberEntity):
     def _on_volume_update(self, volume: int) -> None:
         """Update state when volume changes."""
         self._volume = float(volume)
-        self.async_write_ha_state()
+        if self.hass is not None:
+            self.async_write_ha_state()
 
     async def async_set_native_value(self, value: float) -> None:
         """Write new volume level (1-5) over Bluetooth."""
         try:
             await self._connection.async_set_lock_volume(int(value))
             self._volume = value
-            self.async_write_ha_state()
+            if self.hass is not None:
+                self.async_write_ha_state()
         except (TTLockError, ValueError) as exc:
             raise HomeAssistantError(
                 f"Failed to set sound volume for {self._key.lockMac}: {exc}"

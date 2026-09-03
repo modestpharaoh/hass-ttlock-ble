@@ -2,8 +2,6 @@ get_passage_mode:
   name: Get passage mode
   description: Retrieve all configured passage mode schedule intervals from a TTLock smart lock over Bluetooth.
   target:
-    device:
-      integration: hass_ttlock_ble
     entity:
       integration: hass_ttlock_ble
       domain: lock
@@ -12,8 +10,6 @@ set_passage_mode:
   name: Set passage mode
   description: Configure one or more passage mode schedule intervals on a TTLock smart lock over Bluetooth.
   target:
-    device:
-      integration: hass_ttlock_ble
     entity:
       integration: hass_ttlock_ble
       domain: lock
@@ -71,8 +67,6 @@ delete_passage_mode:
   name: Delete passage mode
   description: Delete a specific passage mode schedule interval from a TTLock smart lock.
   target:
-    device:
-      integration: hass_ttlock_ble
     entity:
       integration: hass_ttlock_ble
       domain: lock
@@ -118,8 +112,6 @@ clear_passage_mode:
   name: Clear passage mode
   description: Remove all configured passage mode schedule intervals from a TTLock smart lock.
   target:
-    device:
-      integration: hass_ttlock_ble
     entity:
       integration: hass_ttlock_ble
       domain: lock
@@ -128,8 +120,6 @@ get_auto_lock_time:
   name: Get auto-lock time
   description: Query the lock's current auto-lock duration (in seconds) and hardware limits over Bluetooth.
   target:
-    device:
-      integration: hass_ttlock_ble
     entity:
       integration: hass_ttlock_ble
       domain: lock
@@ -138,8 +128,6 @@ get_lock_time:
   name: Get lock clock
   description: Read the lock's internal hardware clock over Bluetooth and calculate drift against Home Assistant local time.
   target:
-    device:
-      integration: hass_ttlock_ble
     entity:
       integration: hass_ttlock_ble
       domain: lock
@@ -148,8 +136,6 @@ get_operation_log:
   name: Get operation log
   description: Fetch recent operation event records directly from the lock's on-chip memory over Bluetooth.
   target:
-    device:
-      integration: hass_ttlock_ble
     entity:
       integration: hass_ttlock_ble
       domain: lock
@@ -197,8 +183,6 @@ get_passcodes:
   name: Get passcodes
   description: Query all programmed keyboard passcodes (PINs), types, and validity periods from the lock over Bluetooth.
   target:
-    device:
-      integration: hass_ttlock_ble
     entity:
       integration: hass_ttlock_ble
       domain: lock
@@ -207,8 +191,6 @@ get_cards:
   name: Get IC cards
   description: Query all enrolled RFID / IC cards and validity periods from the lock over Bluetooth.
   target:
-    device:
-      integration: hass_ttlock_ble
     entity:
       integration: hass_ttlock_ble
       domain: lock
@@ -217,8 +199,6 @@ get_fingerprints:
   name: Get fingerprints
   description: Query all enrolled biometric fingerprints and validity periods from the lock over Bluetooth.
   target:
-    device:
-      integration: hass_ttlock_ble
     entity:
       integration: hass_ttlock_ble
       domain: lock
@@ -227,8 +207,6 @@ set_lock_volume:
   name: Set lock volume
   description: Set the keypad and beep sound volume level on the lock over Bluetooth (1 to 5).
   target:
-    device:
-      integration: hass_ttlock_ble
     entity:
       integration: hass_ttlock_ble
       domain: lock

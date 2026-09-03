@@ -405,7 +405,8 @@ class TtlockBleLastUnlockMethodSensor(TtlockBleEntity, RestoreEntity, SensorEnti
         if entry.lock_battery is not None:
             attrs["lock_battery"] = entry.lock_battery
         self._attr_extra_state_attributes = attrs
-        self.async_write_ha_state()
+        if self.hass is not None:
+            self.async_write_ha_state()
 
 
 CREDENTIAL_ICONS: dict[str, str] = {
@@ -467,7 +468,7 @@ class TtlockBleCredentialsCountSensor(TtlockBleEntity, RestoreEntity, SensorEnti
     @callback
     def _on_count_update(self, cred_type: str, count: int) -> None:
         """Update sensor state when its credential count changes."""
-        if cred_type == self._cred_type:
+        if cred_type == self._cred_type and self.hass is not None:
             self.async_write_ha_state()
 
 

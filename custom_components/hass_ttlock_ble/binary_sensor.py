@@ -205,6 +205,11 @@ class TtlockBleConnectionBinarySensor(TtlockBleEntity, BinarySensorEntity):
         """True iff the connection has an open BLE session."""
         return self._connection.is_connected
 
+    @property
+    def icon(self) -> str:
+        """Icon switches between bluetooth-connect and bluetooth-off."""
+        return "mdi:bluetooth-connect" if self.is_on else "mdi:bluetooth-off"
+
     async def async_added_to_hass(self) -> None:
         """Subscribe to connection state changes."""
         await super().async_added_to_hass()

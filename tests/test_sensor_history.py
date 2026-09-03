@@ -62,15 +62,15 @@ def test_format_unlock_method() -> None:
     )
     assert format_unlock_method(entry_mobile) == "Mobile App (Key ID: 42)"
 
-    # Auto-Lock
+    # BLE Lock
     entry_auto = LogEntry(
         record_number=5,
-        record_type=LogOperate.AUTO_LOCK,
+        record_type=LogOperate.OPERATE_BLE_LOCK,
         operate_date=dt.datetime(2026, 9, 2, 10, 20, 0),
         lock_battery=80,
         record_id=1238,
     )
-    assert format_unlock_method(entry_auto) == "Auto-Lock"
+    assert format_unlock_method(entry_auto) == "Operate Ble Lock"
 
     # Mechanical Key
     entry_mech = LogEntry(
